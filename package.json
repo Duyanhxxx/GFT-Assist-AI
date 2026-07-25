@@ -1,0 +1,25 @@
+{
+  "name": "gft-assist-ai",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "db:generate": "prisma generate",
+    "dev:web": "npm run dev --workspace @gft-assist/web",
+    "dev:api": "npm run dev --workspace @gft-assist/api",
+    "postinstall": "prisma generate"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "prisma": "^7.9.0",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

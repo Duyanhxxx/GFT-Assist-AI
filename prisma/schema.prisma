@@ -1,0 +1,365 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  VIEWER
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+}
+
+enum TicketChannel {
+  WEB_FORM
+  EMAIL
+  API
+}
+
+enum TicketStatus {
+  NEW
+  IN_PROGRESS
+  WAITING_CUSTOMER
+  RESOLVED
+  ESCALATED
+  SPAM
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+enum MessageAuthorType {
+  CUSTOMER
+  AGENT
+  OPERATOR
+  SYSTEM
+}
+
+enum KnowledgeSourceType {
+  PDF
+  DOCX
+  TXT
+  MARKDOWN
+}
+
+enum DocumentStatus {
+  PROCESSING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum AiRunType {
+  TRIAGE
+  RESPONSE
+  FOLLOW_UP
+  SUMMARY
+}
+
+enum AiDecisionOutcome {
+  AUTO_RESOLVED
+  FOLLOW_UP_REQUIRED
+  ESCALATED
+  URGENT_ROUTING
+  SPAM_BLOCKED
+  DUPLICATE_MATCHED
+}
+
+enum OverrideType {
+  CLASSIFICATION
+  PRIORITY
+  SPAM
+  DUPLICATE
+  RESPONSE
+  ESCALATION
+}
+
+enum AuditActorType {
+  USER
+  SYSTEM
+  AI
+}
+
+model Organization {
+  id          String               @id @default(cuid())
+  name        String               @db.VarChar(120)
+  slug        String               @unique @db.VarChar(80)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  memberships Membership[]
+  tickets     Ticket[]
+  documents   KnowledgeDocument[]
+  chunks      KnowledgeChunk[]
+  aiRuns      AiRun[]
+  overrides   HumanOverride[]
+  settings    OrganizationSettings?
+  auditLogs   AuditLog[]
+}
+
+model UserProfile {
+  id                    String              @id @default(cuid())
+  supabaseUserId        String              @unique
+  email                 String              @unique @db.VarChar(320)
+  fullName              String?             @db.VarChar(120)
+  avatarUrl             String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  memberships           Membership[]
+  submittedTickets      Ticket[]            @relation("RequesterTickets")
+  assignedTickets       Ticket[]            @relation("AssignedTickets")
+  uploadedDocuments     KnowledgeDocument[] @relation("DocumentUploader")
+  triggeredAiRuns       AiRun[]             @relation("AiRunTriggerUser")
+  createdAssignments    TicketAssignment[]  @relation("AssignmentCreator")
+  receivedAssignments   TicketAssignment[]  @relation("AssignmentTarget")
+  overrides             HumanOverride[]
+  auditActions          AuditLog[]
+  ticketMessages        TicketMessage[]
+}
+
+model Membership {
+  id             String           @id @default(cuid())
+  organizationId String
+  userId         String
+  role           Role
+  status         MembershipStatus @default(ACTIVE)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           UserProfile      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Ticket {
+  id                String             @id @default(cuid())
+  organizationId    String
+  requesterUserId   String?
+  assignedToId      String?
+  duplicateOfId     String?
+  channel           TicketChannel
+  status            TicketStatus       @default(NEW)
+  priority          TicketPriority     @default(MEDIUM)
+  subject           String             @db.VarChar(240)
+  description       String
+  requesterName     String?            @db.VarChar(120)
+  requesterEmail    String             @db.VarChar(320)
+  languageCode      String?            @db.VarChar(12)
+  intentLabel       String?            @db.VarChar(80)
+  sentimentLabel    String?            @db.VarChar(40)
+  spamScore         Float?
+  duplicateScore    Float?
+  urgencyScore      Float?
+  confidenceScore   Float?
+  resolutionSummary String?
+  resolvedAt        DateTime?
+  escalatedAt       DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requesterUser     UserProfile?       @relation("RequesterTickets", fields: [requesterUserId], references: [id], onDelete: SetNull)
+  assignedTo        UserProfile?       @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
+  duplicateOf       Ticket?            @relation("TicketDuplicate", fields: [duplicateOfId], references: [id], onDelete: SetNull)
+  duplicates        Ticket[]           @relation("TicketDuplicate")
+  messages          TicketMessage[]
+  attachments       TicketAttachment[]
+  aiRuns            AiRun[]
+  assignments       TicketAssignment[]
+  overrides         HumanOverride[]
+
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, priority, createdAt])
+  @@index([organizationId, requesterEmail, createdAt])
+  @@index([duplicateOfId])
+}
+
+model TicketMessage {
+  id            String            @id @default(cuid())
+  ticketId      String
+  authorType    MessageAuthorType
+  authorUserId  String?
+  content       String
+  citations     Json?
+  isInternal    Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  ticket        Ticket            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorUser    UserProfile?      @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+  attachments   TicketAttachment[]
+
+  @@index([ticketId, createdAt])
+}
+
+model TicketAttachment {
+  id            String        @id @default(cuid())
+  ticketId      String?
+  messageId     String?
+  fileName      String        @db.VarChar(255)
+  storageBucket String        @db.VarChar(120)
+  storagePath   String
+  contentType   String        @db.VarChar(120)
+  sizeBytes     Int
+  createdAt     DateTime      @default(now())
+  ticket        Ticket?       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  message       TicketMessage? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([messageId])
+}
+
+model KnowledgeDocument {
+  id             String              @id @default(cuid())
+  organizationId String
+  uploadedById   String?
+  title          String              @db.VarChar(240)
+  sourceType     KnowledgeSourceType
+  status         DocumentStatus      @default(PROCESSING)
+  checksum       String              @db.VarChar(128)
+  storageBucket  String              @db.VarChar(120)
+  storagePath    String
+  mimeType       String              @db.VarChar(120)
+  metadata       Json?
+  errorMessage   String?
+  processedAt    DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  uploadedBy     UserProfile?        @relation("DocumentUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  chunks         KnowledgeChunk[]
+
+  @@unique([organizationId, checksum])
+  @@index([organizationId, status, createdAt])
+}
+
+model KnowledgeChunk {
+  id             String                  @id @default(cuid())
+  organizationId String
+  documentId     String
+  chunkIndex     Int
+  content        String
+  tokenCount     Int?
+  embedding      Unsupported("vector(1536)")?
+  metadata       Json?
+  createdAt      DateTime                @default(now())
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  document       KnowledgeDocument       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, chunkIndex])
+  @@index([organizationId, documentId])
+}
+
+model AiRun {
+  id                String             @id @default(cuid())
+  organizationId    String
+  ticketId          String
+  triggeredById     String?
+  type              AiRunType
+  provider          String             @db.VarChar(40)
+  model             String             @db.VarChar(120)
+  promptVersion     String             @db.VarChar(40)
+  inputSummary      String?
+  structuredOutput  Json?
+  retrievedChunks   Json?
+  citations         Json?
+  responseText      String?
+  confidenceScore   Float?
+  estimatedCostUsd  Decimal?           @db.Decimal(10, 4)
+  latencyMs         Int?
+  promptTokens      Int?
+  completionTokens  Int?
+  totalTokens       Int?
+  outcome           AiDecisionOutcome?
+  escalated         Boolean            @default(false)
+  humanOverride     Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ticket            Ticket             @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  triggeredBy       UserProfile?       @relation("AiRunTriggerUser", fields: [triggeredById], references: [id], onDelete: SetNull)
+  overrides         HumanOverride[]
+
+  @@index([organizationId, type, createdAt])
+  @@index([ticketId, createdAt])
+}
+
+model TicketAssignment {
+  id            String      @id @default(cuid())
+  ticketId      String
+  assignedToId  String
+  assignedById  String?
+  reason        String?
+  createdAt     DateTime    @default(now())
+  ticket        Ticket      @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  assignedTo    UserProfile @relation("AssignmentTarget", fields: [assignedToId], references: [id], onDelete: Cascade)
+  assignedBy    UserProfile? @relation("AssignmentCreator", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@index([ticketId, createdAt])
+  @@index([assignedToId, createdAt])
+}
+
+model HumanOverride {
+  id             String       @id @default(cuid())
+  organizationId String
+  ticketId       String
+  aiRunId        String?
+  overriddenById String
+  type           OverrideType
+  previousValue  Json
+  newValue       Json
+  reason         String
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ticket         Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  aiRun          AiRun?       @relation(fields: [aiRunId], references: [id], onDelete: SetNull)
+  overriddenBy   UserProfile  @relation(fields: [overriddenById], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, type, createdAt])
+  @@index([ticketId, createdAt])
+}
+
+model OrganizationSettings {
+  id                  String       @id @default(cuid())
+  organizationId      String       @unique
+  aiModel             String       @db.VarChar(120)
+  temperature         Decimal      @db.Decimal(3, 2)
+  confidenceThreshold Decimal      @db.Decimal(4, 3)
+  embeddingModel      String       @db.VarChar(120)
+  chunkSize           Int
+  chunkOverlap        Int
+  retrievalTopK       Int
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id             String         @id @default(cuid())
+  organizationId String
+  actorType      AuditActorType
+  actorUserId    String?
+  entityType     String         @db.VarChar(80)
+  entityId       String         @db.VarChar(80)
+  action         String         @db.VarChar(120)
+  beforeState    Json?
+  afterState     Json?
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actorUser      UserProfile?   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, entityType, entityId, createdAt])
+  @@index([actorUserId, createdAt])
+}

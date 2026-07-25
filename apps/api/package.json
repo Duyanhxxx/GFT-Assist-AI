@@ -1,0 +1,37 @@
+{
+  "name": "@gft-assist/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.14.0",
+    "@gft-assist/types": "*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
+    "@prisma/client": "^7.9.0",
+    "@supabase/supabase-js": "^2.56.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "helmet": "^8.1.0",
+    "jose": "^6.1.0",
+    "mammoth": "^1.11.0",
+    "pdf-parse": "^1.1.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
+    "@types/pdf-parse": "^1.1.4",
+    "tsx": "^4.20.5"
+  }
+}
