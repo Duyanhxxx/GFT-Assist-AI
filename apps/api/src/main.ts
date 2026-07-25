@@ -13,7 +13,7 @@ const helmet = require("helmet") as typeof import("helmet").default;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const port = configService.get<number>("API_PORT", 4000);
+  const port = configService.get<number>("PORT") ?? configService.get<number>("API_PORT", 4000);
   const corsOrigin = configService.get<string>("API_CORS_ORIGIN", "http://localhost:3000");
 
   app.setGlobalPrefix("api/v1");

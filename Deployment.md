@@ -10,7 +10,7 @@ Required groups:
   - `NEXT_PUBLIC_APP_URL`
   - `NEXT_PUBLIC_API_URL`
   - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - API:
   - `API_PORT`
   - `API_CORS_ORIGIN`
@@ -58,7 +58,7 @@ Required environment variables:
 - `NEXT_PUBLIC_APP_URL`
 - `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
 Point `NEXT_PUBLIC_API_URL` to the deployed Render API URL, for example `https://gft-assist-api.onrender.com/api/v1`.
 
@@ -101,6 +101,12 @@ Required environment variables:
 - `GEMINI_MODEL`
 - `GEMINI_EMBEDDING_MODEL`
 - `DATABASE_URL`
+
+The repository also includes a Render blueprint:
+
+- [`render.yaml`](./render.yaml)
+
+You can use it from Render with `New +` -> `Blueprint` -> select this repository.
 
 ## GitHub Actions
 

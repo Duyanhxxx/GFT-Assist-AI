@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: gft-assist-api
+    runtime: node
+    rootDir: .
+    plan: free
+    buildCommand: npm ci && npm run db:generate && npm run build --workspace @gft-assist/api
+    startCommand: npm run start --workspace @gft-assist/api
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: API_PORT
+        value: 4000
+      - key: API_CORS_ORIGIN
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        value: https://cnbdtaigqklrmqzbzfrz.supabase.co/auth/v1/.well-known/jwks.json
+      - key: SUPABASE_JWT_ISSUER
+        value: https://cnbdtaigqklrmqzbzfrz.supabase.co/auth/v1
+      - key: SUPABASE_JWT_AUDIENCE
+        value: authenticated
+      - key: SUPABASE_URL
+        value: https://cnbdtaigqklrmqzbzfrz.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET_KB
+        value: knowledge-base
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GEMINI_EMBEDDING_MODEL
+        value: gemini-embedding-001
+      - key: DATABASE_URL
+        sync: false

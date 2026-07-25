@@ -20,7 +20,7 @@ export default async function DashboardPage() {
         <Card className="max-w-xl p-8">
           <h1 className="text-2xl font-semibold text-slate-950">Configure Supabase to continue</h1>
           <p className="mt-3 text-sm text-slate-600">
-            Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to enable login.
+            Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to enable login.
           </p>
         </Card>
       </main>
