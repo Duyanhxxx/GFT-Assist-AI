@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
-import helmet from "helmet";
+import * as helmet from "helmet";
 
 import { AppModule } from "./app.module.js";
 
@@ -14,7 +14,7 @@ async function bootstrap() {
   const corsOrigin = configService.get<string>("API_CORS_ORIGIN", "http://localhost:3000");
 
   app.setGlobalPrefix("api/v1");
-  app.use(helmet());
+  app.use(helmet.default());
   app.enableCors({
     origin: corsOrigin,
     credentials: true,
