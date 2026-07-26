@@ -1,9 +1,13 @@
 "use client";
 
+import type { ComponentProps } from "react";
+
 import { createClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 
-export function SignOutButton() {
+type SignOutButtonProps = Omit<ComponentProps<typeof Button>, "children" | "onClick">;
+
+export function SignOutButton(props: SignOutButtonProps) {
   async function onSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -11,7 +15,7 @@ export function SignOutButton() {
   }
 
   return (
-    <Button className="bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50" onClick={onSignOut}>
+    <Button onClick={onSignOut} {...props}>
       Sign out
     </Button>
   );

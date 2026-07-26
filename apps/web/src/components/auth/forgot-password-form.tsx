@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
+import { ArrowLeft, MailCheck } from "lucide-react";
 
 import { forgotPasswordSchema, type ForgotPasswordValues } from "@/features/auth/schema";
 import { createClient } from "@/lib/supabase/browser";
 import { env } from "@/lib/env";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 export function ForgotPasswordForm() {
@@ -51,28 +53,41 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-md p-8">
-      <div className="mb-6 space-y-2">
-        <h1 className="text-2xl font-semibold text-slate-950">Forgot password</h1>
-        <p className="text-sm text-slate-600">We will send a reset link to your email.</p>
-      </div>
+    <Card className="w-full max-w-lg rounded-[32px]">
+      <CardHeader className="gap-3 p-8 pb-4">
+        <Link className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]" href="/login">
+          <ArrowLeft className="h-4 w-4" />
+          Back to sign in
+        </Link>
+        <CardTitle className="text-2xl md:text-3xl">Reset password</CardTitle>
+        <CardDescription className="text-sm leading-6">
+          Enter your work email and we&apos;ll send a secure reset link.
+        </CardDescription>
+      </CardHeader>
 
-      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700" htmlFor="email">
-            Email
-          </label>
-          <Input id="email" type="email" {...form.register("email")} />
-          <p className="text-sm text-rose-600">{form.formState.errors.email?.message}</p>
-        </div>
+      <CardContent className="p-8 pt-2">
+        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-[color:var(--muted-foreground)]" htmlFor="email">
+              Work email
+            </label>
+            <Input autoComplete="email" id="email" placeholder="ops@company.com" type="email" {...form.register("email")} />
+            <p className="min-h-5 text-sm text-rose-600">{form.formState.errors.email?.message}</p>
+          </div>
 
-        {status ? <p className="text-sm text-emerald-600">{status}</p> : null}
-        {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+          {status ? (
+            <p className="flex items-center gap-2 rounded-2xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+              <MailCheck className="h-4 w-4" />
+              {status}
+            </p>
+          ) : null}
+          {error ? <p className="rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">{error}</p> : null}
 
-        <Button className="w-full" type="submit">
-          Send reset link
-        </Button>
-      </form>
+          <Button className="w-full" size="lg" type="submit">
+            Send reset link
+          </Button>
+        </form>
+      </CardContent>
     </Card>
   );
 }
