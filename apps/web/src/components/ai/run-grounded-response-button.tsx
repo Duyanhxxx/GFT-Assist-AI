@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FileText } from "lucide-react";
 
 import { runGroundedResponse } from "@/lib/api/client";
 import { createClient } from "@/lib/supabase/browser";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 type RunGroundedResponseButtonProps = {
@@ -42,10 +44,11 @@ export function RunGroundedResponseButton({ ticketId }: RunGroundedResponseButto
 
   return (
     <div className="space-y-2">
-      <Button className="bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50" disabled={isSubmitting} onClick={onRun}>
+      <Button className="w-full" disabled={isSubmitting} onClick={onRun} size="lg" variant="secondary">
+        <FileText className="h-4 w-4" />
         {isSubmitting ? "Generating response..." : "Generate grounded response"}
       </Button>
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {error ? <Alert className="py-2" variant="danger">{error}</Alert> : null}
     </div>
   );
 }

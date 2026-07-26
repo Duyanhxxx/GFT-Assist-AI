@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { fetchDashboardSummary, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
@@ -20,10 +21,11 @@ export default async function DashboardPage() {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-5xl items-center justify-center px-6 py-12">
         <Card className="max-w-xl rounded-[28px] p-8">
-          <h1 className="text-2xl font-semibold">Configure Supabase to continue</h1>
-          <p className="mt-3 text-sm text-[color:var(--muted)]">
-            Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to enable login.
-          </p>
+          <EmptyState
+            description="Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to enable login and the operator workspace."
+            icon={ShieldCheck}
+            title="Configure Supabase to continue"
+          />
         </Card>
       </main>
     );
@@ -169,7 +171,11 @@ export default async function DashboardPage() {
           <DashboardSummaryGrid summary={summaryResponse.data} />
         ) : (
           <Card className="rounded-[28px] p-6">
-            <p className="text-sm text-[color:var(--muted)]">Unable to load dashboard metrics from the API.</p>
+            <EmptyState
+              description="The workspace loaded, but the metrics request did not return successfully."
+              icon={Activity}
+              title="Unable to load dashboard metrics"
+            />
           </Card>
         )}
       </section>

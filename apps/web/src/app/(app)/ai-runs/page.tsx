@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowRight, BrainCircuit, Settings2 } from "lucide-react";
 
+import { PageHeader } from "@/components/layout/page-header";
 import { AiRunsTable } from "@/components/logs/ai-runs-table";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { fetchAiRuns, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
 
@@ -13,8 +16,12 @@ export default async function AiRunsPage() {
   if (!hasSupabaseEnv()) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <Card className="p-8">
-          <p className="text-sm text-slate-600">Configure Supabase before reviewing AI run logs.</p>
+        <Card className="rounded-[28px] p-8">
+          <EmptyState
+            description="Authentication must be configured before AI audit logs can load."
+            icon={BrainCircuit}
+            title="Configure Supabase to continue"
+          />
         </Card>
       </main>
     );
@@ -29,31 +36,54 @@ export default async function AiRunsPage() {
   const response = await fetchAiRuns(accessToken).catch(() => null);
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-12">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">Logs</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-950">AI run observability</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/settings">
-            <Button className="bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50">Settings</Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button className="bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50">Dashboard</Button>
-          </Link>
-          <Link href="/tickets">
-            <Button>Open tickets</Button>
-          </Link>
-        </div>
-      </div>
+    <main className="space-y-8 pb-10">
+      <PageHeader
+        actions={
+          <>
+            <Link href="/settings">
+              <Button variant="secondary">
+                <Settings2 className="h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button>
+                Dashboard
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </>
+        }
+        description="Audit how the AI layer behaves in production, including latency, confidence, escalation decisions, and prompt lineage."
+        eyebrow="AI logs"
+        title="AI run observability"
+      />
 
-      <div className="mt-8">
+      <Card className="surface-elevated rounded-[32px] p-8">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold">Audit console</p>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-[color:var(--muted)]">
+              This view is optimized for recruiter review and operator trust: it makes AI outcomes easier to inspect without changing the append-only backend log model.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--muted-foreground)]">
+            <BrainCircuit className="h-4 w-4" />
+            Live AI decision history
+          </div>
+        </div>
+      </Card>
+
+      <div>
         {response ? (
           <AiRunsTable runs={response.data} />
         ) : (
-          <Card className="p-6">
-            <p className="text-sm text-slate-600">Unable to load AI run logs from the API.</p>
+          <Card className="rounded-[28px] p-6">
+            <EmptyState
+              description="The AI run log request did not return successfully."
+              icon={BrainCircuit}
+              title="Unable to load AI run logs"
+            />
           </Card>
         )}
       </div>

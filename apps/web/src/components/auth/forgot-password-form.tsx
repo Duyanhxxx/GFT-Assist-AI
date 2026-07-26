@@ -8,6 +8,7 @@ import { ArrowLeft, MailCheck } from "lucide-react";
 import { forgotPasswordSchema, type ForgotPasswordValues } from "@/features/auth/schema";
 import { createClient } from "@/lib/supabase/browser";
 import { env } from "@/lib/env";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -76,12 +77,11 @@ export function ForgotPasswordForm() {
           </div>
 
           {status ? (
-            <p className="flex items-center gap-2 rounded-2xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
-              <MailCheck className="h-4 w-4" />
+            <Alert icon={<MailCheck className="h-4 w-4" />} variant="success">
               {status}
-            </p>
+            </Alert>
           ) : null}
-          {error ? <p className="rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">{error}</p> : null}
+          {error ? <Alert variant="danger">{error}</Alert> : null}
 
           <Button className="w-full" size="lg" type="submit">
             Send reset link

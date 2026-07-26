@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArrowLeft, BrainCircuit, FileText } from "lucide-react";
 
 import { RunGroundedResponseButton } from "@/components/ai/run-grounded-response-button";
 import { RunTriageButton } from "@/components/ai/run-triage-button";
+import { PageHeader } from "@/components/layout/page-header";
 import { TicketDetailCard } from "@/components/tickets/ticket-detail-card";
 import { TicketMessages } from "@/components/tickets/ticket-messages";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { fetchTicket, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
 
@@ -21,8 +25,12 @@ export default async function TicketPage({ params }: TicketPageProps) {
   if (!hasSupabaseEnv()) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <Card className="p-8">
-          <p className="text-sm text-slate-600">Configure Supabase before opening ticket details.</p>
+        <Card className="rounded-[28px] p-8">
+          <EmptyState
+            description="Authentication must be configured before the ticket workspace can load."
+            icon={BrainCircuit}
+            title="Configure Supabase to continue"
+          />
         </Card>
       </main>
     );
@@ -42,18 +50,65 @@ export default async function TicketPage({ params }: TicketPageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-12">
-      <div className="flex items-start justify-between gap-4">
-        <Link className="text-sm text-slate-600 hover:text-slate-900" href="/tickets">
-          Back to tickets
-        </Link>
-        <div className="flex flex-col gap-3">
-          <RunTriageButton ticketId={ticketId} />
-          <RunGroundedResponseButton ticketId={ticketId} />
-        </div>
-      </div>
+    <main className="space-y-8 pb-10">
+      <PageHeader
+        actions={
+          <Link href="/tickets">
+            <Button variant="secondary">
+              <ArrowLeft className="h-4 w-4" />
+              Back to queue
+            </Button>
+          </Link>
+        }
+        description="Review the full customer context, inspect AI-derived signals, and run ticket actions from one audit-friendly view."
+        eyebrow="Ticket detail"
+        title={response.data.ticket.subject}
+      />
 
-      <div className="mt-6 space-y-6">
+      <section className="grid gap-6 xl:grid-cols-[1fr_320px]">
+        <Card className="surface-elevated rounded-[32px]">
+          <CardHeader>
+            <CardTitle>Operator actions</CardTitle>
+            <CardDescription>Trigger AI triage or generate a grounded reply using the existing backend workflow.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-[28px] border border-[color:var(--border)] p-5">
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950/5 dark:bg-white/8">
+                <BrainCircuit className="h-4 w-4" />
+              </div>
+              <p className="text-sm font-semibold">Gemini triage</p>
+              <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
+                Re-run classification, urgency, sentiment, and confidence for this case.
+              </p>
+              <div className="mt-4">
+                <RunTriageButton ticketId={ticketId} />
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-[color:var(--border)] p-5">
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950/5 dark:bg-white/8">
+                <FileText className="h-4 w-4" />
+              </div>
+              <p className="text-sm font-semibold">Grounded response</p>
+              <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
+                Generate a support reply tied to retrieved knowledge and visible citations.
+              </p>
+              <div className="mt-4">
+                <RunGroundedResponseButton ticketId={ticketId} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-[32px] p-6">
+          <p className="text-sm font-semibold">Workflow note</p>
+          <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">
+            This screen preserves the existing backend flow. The UI is only making the operator path more legible and faster to scan.
+          </p>
+        </Card>
+      </section>
+
+      <div className="space-y-6">
         <TicketDetailCard ticket={response.data.ticket} />
         <TicketMessages messages={response.data.messages} />
       </div>

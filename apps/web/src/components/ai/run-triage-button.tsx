@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { BrainCircuit } from "lucide-react";
 
 import { runTicketTriage } from "@/lib/api/client";
 import { createClient } from "@/lib/supabase/browser";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 type RunTriageButtonProps = {
@@ -42,10 +44,11 @@ export function RunTriageButton({ ticketId }: RunTriageButtonProps) {
 
   return (
     <div className="space-y-2">
-      <Button disabled={isSubmitting} onClick={onRun}>
+      <Button className="w-full" disabled={isSubmitting} onClick={onRun} size="lg">
+        <BrainCircuit className="h-4 w-4" />
         {isSubmitting ? "Running triage..." : "Run Gemini triage"}
       </Button>
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {error ? <Alert className="py-2" variant="danger">{error}</Alert> : null}
     </div>
   );
 }

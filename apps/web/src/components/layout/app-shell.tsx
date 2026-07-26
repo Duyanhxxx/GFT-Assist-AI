@@ -140,7 +140,7 @@ export function AppShell({ children, user }: AppShellProps) {
 
               <div className="flex items-center gap-2">
                 <Badge>{user.role}</Badge>
-                <div className="hidden rounded-2xl border border-[color:var(--border)] bg-white/60 px-3 py-2 text-right text-xs dark:bg-slate-950/40 md:block">
+                <div className="hidden rounded-2xl border border-[color:var(--border)] bg-white/60 px-3 py-2 text-right text-xs shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:bg-slate-950/40 md:block">
                   <p className="font-medium text-[color:var(--foreground)]">{user.email}</p>
                   <p className="text-[color:var(--muted)]">Secure session active</p>
                 </div>

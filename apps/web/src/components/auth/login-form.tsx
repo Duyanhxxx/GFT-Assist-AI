@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 
 import { loginSchema, type LoginValues } from "@/features/auth/schema";
 import { createClient } from "@/lib/supabase/browser";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -88,7 +89,7 @@ export function LoginForm() {
             <p className="min-h-5 text-sm text-rose-600">{form.formState.errors.password?.message}</p>
           </div>
 
-          {error ? <p className="rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">{error}</p> : null}
+          {error ? <Alert variant="danger">{error}</Alert> : null}
 
           <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
             {isSubmitting ? "Signing in..." : "Enter workspace"}

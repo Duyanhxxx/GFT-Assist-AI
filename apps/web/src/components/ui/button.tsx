@@ -12,11 +12,12 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-[color:var(--foreground)] text-white shadow-[0_10px_30px_rgba(15,23,42,0.16)] hover:-translate-y-0.5 hover:opacity-95",
+    "bg-[color:var(--foreground)] text-white shadow-[0_10px_30px_rgba(15,23,42,0.16)] hover:-translate-y-0.5 hover:opacity-95 active:translate-y-0",
   secondary:
-    "border border-[color:var(--border-strong)] bg-white/70 text-[color:var(--foreground)] hover:bg-white dark:bg-slate-950/40 dark:hover:bg-slate-950/60",
-  ghost: "bg-transparent text-[color:var(--muted-foreground)] hover:bg-slate-950/5 hover:text-[color:var(--foreground)] dark:hover:bg-white/8",
-  danger: "bg-[color:var(--danger)] text-white hover:-translate-y-0.5 hover:opacity-95",
+    "border border-[color:var(--border-strong)] bg-white/70 text-[color:var(--foreground)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-[color:var(--border-strong)] hover:bg-white active:bg-white/90 dark:bg-slate-950/40 dark:hover:bg-slate-950/60",
+  ghost:
+    "bg-transparent text-[color:var(--muted-foreground)] hover:bg-slate-950/5 hover:text-[color:var(--foreground)] active:bg-slate-950/8 dark:hover:bg-white/8 dark:active:bg-white/10",
+  danger: "bg-[color:var(--danger)] text-white shadow-[0_10px_30px_rgba(220,38,38,0.2)] hover:-translate-y-0.5 hover:opacity-95 active:translate-y-0",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -36,7 +37,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--ring)] disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none disabled:opacity-55",
         variantClasses[variant],
         sizeClasses[size],
         className,

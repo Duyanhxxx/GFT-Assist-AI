@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 type CardProps = HTMLAttributes<HTMLDivElement>;
 
 export function Card({ className, ...props }: CardProps) {
-  return <div className={cn("surface rounded-3xl", className)} {...props} />;
+  return <div className={cn("surface rounded-3xl shadow-[0_12px_34px_rgba(15,23,42,0.06)]", className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

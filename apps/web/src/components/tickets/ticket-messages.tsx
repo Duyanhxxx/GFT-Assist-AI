@@ -1,6 +1,9 @@
 import type { TicketMessage } from "@gft-assist/types";
+import { Bot, FileSearch, MessageSquare, ShieldEllipsis, UserRound } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type TicketMessagesProps = {
   messages: TicketMessage[];
@@ -9,41 +12,68 @@ type TicketMessagesProps = {
 export function TicketMessages({ messages }: TicketMessagesProps) {
   if (!messages.length) {
     return (
-      <Card className="p-6">
-        <p className="text-sm text-slate-600">No messages on this ticket yet.</p>
+      <Card className="rounded-[28px] p-6">
+        <EmptyState
+          description="Customer replies, operator notes, and AI-generated messages will appear here."
+          icon={MessageSquare}
+          title="No timeline events yet"
+        />
       </Card>
     );
   }
 
+  const authorMeta = {
+    CUSTOMER: { icon: UserRound, tone: "default" as const },
+    AGENT: { icon: Bot, tone: "info" as const },
+    OPERATOR: { icon: ShieldEllipsis, tone: "success" as const },
+    SYSTEM: { icon: MessageSquare, tone: "warning" as const },
+  };
+
   return (
-    <Card className="p-6">
-      <p className="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">Timeline</p>
-      <div className="mt-4 space-y-5">
+    <Card className="rounded-[32px]">
+      <CardHeader>
+        <CardTitle>Timeline</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
         {messages.map((message) => (
-          <div className="rounded-lg border border-slate-200 p-4" key={message.id}>
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm font-medium text-slate-900">{message.authorType}</p>
-              <p className="text-xs text-slate-500">{new Date(message.createdAt).toLocaleString()}</p>
+          <div className="rounded-[28px] border border-[color:var(--border)] bg-white/50 p-5 dark:bg-slate-950/30" key={message.id}>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950/5 dark:bg-white/8">
+                  {(() => {
+                    const Icon = authorMeta[message.authorType].icon;
+                    return <Icon className="h-4 w-4" />;
+                  })()}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{message.authorType}</p>
+                  <p className="text-xs text-[color:var(--muted)]">{new Date(message.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+              <Badge variant={authorMeta[message.authorType].tone}>{message.citations?.length ? "Grounded" : "Message"}</Badge>
             </div>
 
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">{message.content}</p>
+            <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[color:var(--foreground)]">{message.content}</p>
 
             {message.citations?.length ? (
               <div className="mt-4 space-y-2">
-                <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Citations</p>
+                <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--muted)]">
+                  <FileSearch className="h-3.5 w-3.5" />
+                  Citations
+                </p>
                 {message.citations.map((citation) => (
-                  <div className="rounded-md bg-slate-50 p-3 text-sm" key={`${message.id}-${citation.chunkId}`}>
-                    <p className="font-medium text-slate-900">
+                  <div className="rounded-2xl bg-slate-950/[0.03] p-4 text-sm dark:bg-white/[0.04]" key={`${message.id}-${citation.chunkId}`}>
+                    <p className="font-medium">
                       {citation.documentTitle} · Chunk {citation.chunkIndex}
                     </p>
-                    <p className="mt-1 text-slate-600">{citation.excerpt}</p>
+                    <p className="mt-2 leading-6 text-[color:var(--muted)]">{citation.excerpt}</p>
                   </div>
                 ))}
               </div>
             ) : null}
           </div>
         ))}
-      </div>
+      </CardContent>
     </Card>
   );
 }
