@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { fetchOrganizationSettings, getServerAccessToken } from "@/lib/api/server";
+import { resolveUserRole } from "@/lib/auth/user-metadata";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -45,9 +46,13 @@ export default async function SettingsPage() {
     redirect("/login");
   }
 
-  const roleValue = user.app_metadata?.platform_role;
-  const role: AppRole = roleValue === "ADMIN" || roleValue === "OPERATOR" || roleValue === "VIEWER" ? roleValue : "VIEWER";
-  const response = await fetchOrganizationSettings(accessToken).catch(() => null);
+  const role: AppRole = resolveUserRole(user);
+  const result = await fetchOrganizationSettings(accessToken)
+    .then((response) => ({ response, error: null }))
+    .catch((error: unknown) => ({
+      response: null,
+      error: error instanceof Error ? error.message : "The runtime configuration request did not return successfully.",
+    }));
 
   return (
     <main className="space-y-8 pb-10">
@@ -89,12 +94,12 @@ export default async function SettingsPage() {
       </Card>
 
       <div>
-        {response ? (
-          <OrganizationSettingsForm recentChanges={response.data.recentChanges} role={role} settings={response.data.settings} />
+        {result.response ? (
+          <OrganizationSettingsForm recentChanges={result.response.data.recentChanges} role={role} settings={result.response.data.settings} />
         ) : (
           <Card className="rounded-[28px] p-6">
             <EmptyState
-              description="The runtime configuration request did not return successfully."
+              description={result.error ?? "The runtime configuration request did not return successfully."}
               icon={LayoutDashboard}
               title="Unable to load organization settings"
             />

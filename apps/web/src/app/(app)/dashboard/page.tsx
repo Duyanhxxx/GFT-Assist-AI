@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { resolveOrganizationId, resolveUserRole } from "@/lib/auth/user-metadata";
 import { fetchDashboardSummary, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
@@ -42,9 +43,8 @@ export default async function DashboardPage() {
 
   const accessToken = await getServerAccessToken();
 
-  const roleValue = user.app_metadata?.platform_role;
-  const role: AppRole = roleValue === "ADMIN" || roleValue === "OPERATOR" || roleValue === "VIEWER" ? roleValue : "VIEWER";
-  const organizationId = user.app_metadata?.organization_id as string | undefined;
+  const role: AppRole = resolveUserRole(user);
+  const organizationId = resolveOrganizationId(user);
   const summaryResponse = accessToken ? await fetchDashboardSummary(accessToken).catch(() => null) : null;
 
   return (

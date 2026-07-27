@@ -30,7 +30,13 @@ export class AuthService {
     const appMetadata = this.asRecord(payload.app_metadata);
     const userMetadata = this.asRecord(payload.user_metadata);
     const roleCandidate = appMetadata.platform_role ?? userMetadata.platform_role ?? payload.role;
-    const organizationId = appMetadata.organization_id;
+    const organizationId =
+      appMetadata.organization_id ??
+      userMetadata.organization_id ??
+      appMetadata.organizationId ??
+      userMetadata.organizationId ??
+      appMetadata.org_id ??
+      userMetadata.org_id;
 
     if (!id || !email) {
       throw new UnauthorizedException("Token payload is missing required claims.");
