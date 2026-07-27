@@ -1,14 +1,19 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { MembershipStatus } from "@prisma/client";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 import { APP_ROLES, type AppRole } from "@gft-assist/types";
 
+import { PrismaService } from "../../infrastructure/prisma/prisma.service.js";
 import type { RequestUser } from "./types/request-user.type.js";
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async verifyAccessToken(token: string): Promise<RequestUser> {
     const jwksUrl = this.configService.get<string>("SUPABASE_JWKS_URL");
@@ -42,7 +47,10 @@ export class AuthService {
       throw new UnauthorizedException("Token payload is missing required claims.");
     }
 
-    const role = this.isAppRole(roleCandidate) ? roleCandidate : "VIEWER";
+    const membershipContext = await this.resolveMembershipContext(id, email);
+    const role = this.isAppRole(roleCandidate)
+      ? roleCandidate
+      : membershipContext?.role ?? "VIEWER";
 
     const user: RequestUser = {
       id,
@@ -52,9 +60,44 @@ export class AuthService {
 
     if (typeof organizationId === "string") {
       user.organizationId = organizationId;
+    } else if (membershipContext?.organizationId) {
+      user.organizationId = membershipContext.organizationId;
     }
 
     return user;
+  }
+
+  private async resolveMembershipContext(id: string, email: string) {
+    const profile = await this.prisma.userProfile.findFirst({
+      where: {
+        OR: [{ supabaseUserId: id }, { email }],
+      },
+      select: {
+        memberships: {
+          where: {
+            status: MembershipStatus.ACTIVE,
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+          select: {
+            role: true,
+            organizationId: true,
+          },
+        },
+      },
+    });
+
+    const membership = profile?.memberships[0];
+
+    if (!membership || !this.isAppRole(membership.role)) {
+      return null;
+    }
+
+    return {
+      role: membership.role,
+      organizationId: membership.organizationId,
+    };
   }
 
   private isAppRole(value: unknown): value is AppRole {
