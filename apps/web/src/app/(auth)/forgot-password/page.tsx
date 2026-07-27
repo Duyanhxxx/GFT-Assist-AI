@@ -1,12 +1,15 @@
 import { AuthShell } from "@/components/auth/auth-shell";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
+import { getServerTranslator } from "@/lib/i18n/server";
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  const { t } = await getServerTranslator();
+
   return (
     <AuthShell
-      description="Recovery should feel just as polished as the core workspace: clear, low-friction, and trustworthy for operators handling sensitive support workflows."
-      eyebrow="Account recovery"
-      title="Get operators back into the workspace quickly."
+      description={t("authShell.descriptionForgot")}
+      eyebrow={t("authShell.eyebrowForgot")}
+      title={t("authShell.titleForgot")}
     >
       <ForgotPasswordForm />
     </AuthShell>

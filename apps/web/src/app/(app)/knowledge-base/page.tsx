@@ -10,10 +10,13 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { fetchKnowledgeDocuments, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function KnowledgeBasePage() {
+  const { t } = await getServerTranslator();
+
   if (!hasSupabaseEnv()) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-12">
@@ -21,7 +24,7 @@ export default async function KnowledgeBasePage() {
           <EmptyState
             description="Authentication must be configured before the document ingestion workspace can load."
             icon={BookOpen}
-            title="Configure Supabase to continue"
+            title={t("common.configureSupabase")}
           />
         </Card>
       </main>
@@ -44,33 +47,33 @@ export default async function KnowledgeBasePage() {
             <Link href="/tickets">
               <Button variant="secondary">
                 <BookOpen className="h-4 w-4" />
-                Ticket queue
+                {t("common.ticketQueue")}
               </Button>
             </Link>
             <Link href="/dashboard">
               <Button>
-                Dashboard
+                {t("common.dashboard")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </>
         }
-        description="Manage the content pipeline behind grounded support answers, from upload through chunk inspection and retrieval readiness."
-        eyebrow="Knowledge base"
-        title="Document ingestion"
+        description={t("knowledge.description")}
+        eyebrow={t("knowledge.eyebrow")}
+        title={t("knowledge.title")}
       />
 
       <Card className="surface-elevated rounded-[32px] p-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm font-semibold">RAG content workflow</p>
+            <p className="text-sm font-semibold">{t("knowledge.workflowTitle")}</p>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-[color:var(--muted)]">
-              Upload operator-approved sources, monitor processing state, and inspect the exact chunked content available to the AI layer.
+              {t("knowledge.workflowDescription")}
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--muted-foreground)]">
             <Upload className="h-4 w-4" />
-            Premium ingestion workspace
+            {t("knowledge.workflowBadge")}
           </div>
         </div>
       </Card>
@@ -84,7 +87,7 @@ export default async function KnowledgeBasePage() {
             <EmptyState
               description="The document library request did not return successfully."
               icon={Upload}
-              title="Unable to load knowledge documents"
+              title={t("system.unableKnowledge")}
             />
           </Card>
         )}

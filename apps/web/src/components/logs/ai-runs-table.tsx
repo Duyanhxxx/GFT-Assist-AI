@@ -12,40 +12,44 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { getIntlLocale } from "@/lib/i18n/config";
+import { useLocale } from "@/providers/locale-provider";
 
 type AiRunsTableProps = {
   runs: AiRunListItem[];
 };
 
-function formatPercent(value: number | null) {
+function formatPercent(value: number | null, locale: string, fallback: string) {
   if (value === null) {
-    return "N/A";
+    return fallback;
   }
 
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(locale, {
     style: "percent",
     maximumFractionDigits: 1,
   }).format(value);
 }
 
-function formatNumber(value: number | null) {
+function formatNumber(value: number | null, locale: string, fallback: string) {
   if (value === null) {
-    return "N/A";
+    return fallback;
   }
 
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(locale, {
     maximumFractionDigits: 0,
   }).format(value);
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
 }
 
 export function AiRunsTable({ runs }: AiRunsTableProps) {
+  const { locale, t } = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [escalationFilter, setEscalationFilter] = useState("ALL");
@@ -92,9 +96,9 @@ export function AiRunsTable({ runs }: AiRunsTableProps) {
     return (
       <Card className="rounded-[28px] p-6">
         <EmptyState
-          description="AI actions and audit events will appear here once triage or grounded response flows run."
+          description={t("aiRuns.noRunsDescription")}
           icon={Bot}
-          title="No AI runs yet"
+          title={t("aiRuns.noRuns")}
         />
       </Card>
     );
@@ -104,10 +108,10 @@ export function AiRunsTable({ runs }: AiRunsTableProps) {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Total runs", value: formatNumber(summary.total), icon: Bot, helper: "Recorded AI decisions in this workspace." },
-          { label: "Escalated", value: formatNumber(summary.escalated), icon: TriangleAlert, helper: "Runs that triggered human escalation." },
-          { label: "Average latency", value: `${formatNumber(summary.avgLatency)} ms`, icon: Clock3, helper: "Mean model response time." },
-          { label: "Average confidence", value: formatPercent(summary.avgConfidence), icon: Ticket, helper: "Mean confidence across scored runs." },
+          { label: t("aiRuns.cards.totalRuns"), value: formatNumber(summary.total, intlLocale, "N/A"), icon: Bot, helper: t("aiRuns.cards.totalRunsHelper") },
+          { label: t("aiRuns.cards.escalated"), value: formatNumber(summary.escalated, intlLocale, "N/A"), icon: TriangleAlert, helper: t("aiRuns.cards.escalatedHelper") },
+          { label: t("aiRuns.cards.avgLatency"), value: `${formatNumber(summary.avgLatency, intlLocale, "N/A")} ms`, icon: Clock3, helper: t("aiRuns.cards.avgLatencyHelper") },
+          { label: t("aiRuns.cards.avgConfidence"), value: formatPercent(summary.avgConfidence, intlLocale, "N/A"), icon: Ticket, helper: t("aiRuns.cards.avgConfidenceHelper") },
         ].map((item) => {
           const Icon = item.icon;
 
@@ -132,14 +136,14 @@ export function AiRunsTable({ runs }: AiRunsTableProps) {
         <CardHeader className="gap-4 border-b border-[color:var(--border)] p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <CardTitle className="text-xl">AI execution log</CardTitle>
+              <CardTitle className="text-xl">{t("aiRuns.tableTitle")}</CardTitle>
               <p className="mt-1 text-sm text-[color:var(--muted)]">
-                Inspect model type, outcome, escalation, latency, and token usage without changing the underlying audit data.
+                {t("aiRuns.tableDescription")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge>{filteredRuns.length} visible</Badge>
-              <Badge variant="info">Append-only audit</Badge>
+              <Badge>{t("common.visibleCount", { count: filteredRuns.length })}</Badge>
+              <Badge variant="info">{t("common.appendOnlyAudit")}</Badge>
             </div>
           </div>
 
@@ -149,22 +153,22 @@ export function AiRunsTable({ runs }: AiRunsTableProps) {
               <Input
                 className="pl-11"
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search ticket, model, or prompt version"
+                placeholder={t("common.searchTicketModelPrompt")}
                 value={query}
               />
             </div>
             <Select onChange={(event) => setTypeFilter(event.target.value)} value={typeFilter}>
-              <option value="ALL">All run types</option>
+              <option value="ALL">{t("common.allRunTypes")}</option>
               {Array.from(new Set(runs.map((run) => run.type))).map((type) => (
                 <option key={type} value={type}>
-                  {type.replaceAll("_", " ")}
+                  {t(`aiRuns.types.${type}`)}
                 </option>
               ))}
             </Select>
             <Select onChange={(event) => setEscalationFilter(event.target.value)} value={escalationFilter}>
-              <option value="ALL">All escalation states</option>
-              <option value="ESCALATED">Escalated only</option>
-              <option value="CONTAINED">Contained only</option>
+              <option value="ALL">{t("common.allEscalationStates")}</option>
+              <option value="ESCALATED">{t("aiRuns.escalationFilter.escalatedOnly")}</option>
+              <option value="CONTAINED">{t("aiRuns.escalationFilter.containedOnly")}</option>
             </Select>
           </div>
         </CardHeader>
@@ -173,16 +177,16 @@ export function AiRunsTable({ runs }: AiRunsTableProps) {
           <table className="min-w-full text-sm">
             <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl dark:bg-slate-950/70">
               <tr className="border-b border-[color:var(--border)] text-left text-[color:var(--muted)]">
-                <th className="px-6 py-4 font-medium">Ticket</th>
-                <th className="px-6 py-4 font-medium">Type</th>
-                <th className="px-6 py-4 font-medium">Outcome</th>
-                <th className="px-6 py-4 font-medium">Confidence</th>
-                <th className="px-6 py-4 font-medium">Latency</th>
-                <th className="px-6 py-4 font-medium">Tokens</th>
-                <th className="px-6 py-4 font-medium">Model</th>
-                <th className="px-6 py-4 font-medium">Prompt</th>
-                <th className="px-6 py-4 font-medium">Escalation</th>
-                <th className="px-6 py-4 font-medium">Created</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.ticket")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.type")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.outcome")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.confidence")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.latency")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.tokens")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.model")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.prompt")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.escalation")}</th>
+                <th className="px-6 py-4 font-medium">{t("aiRuns.table.created")}</th>
               </tr>
             </thead>
             <tbody>
@@ -193,7 +197,7 @@ export function AiRunsTable({ runs }: AiRunsTableProps) {
                       <Link className="text-sm font-semibold hover:opacity-75" href={`/tickets/${run.ticketId}`}>
                         {run.ticketSubject}
                       </Link>
-                      <p className="text-xs text-[color:var(--muted)]">{formatDate(run.createdAt)}</p>
+                      <p className="text-xs text-[color:var(--muted)]">{formatDate(run.createdAt, intlLocale)}</p>
                     </div>
                   </td>
                   <td className="px-6 py-5">
@@ -202,9 +206,9 @@ export function AiRunsTable({ runs }: AiRunsTableProps) {
                   <td className="px-6 py-5">
                     <AiRunOutcomeBadge outcome={run.outcome} />
                   </td>
-                  <td className="px-6 py-5">{formatPercent(run.confidenceScore)}</td>
-                  <td className="px-6 py-5">{formatNumber(run.latencyMs)}</td>
-                  <td className="px-6 py-5">{formatNumber(run.totalTokens)}</td>
+                  <td className="px-6 py-5">{formatPercent(run.confidenceScore, intlLocale, "N/A")}</td>
+                  <td className="px-6 py-5">{formatNumber(run.latencyMs, intlLocale, "N/A")}</td>
+                  <td className="px-6 py-5">{formatNumber(run.totalTokens, intlLocale, "N/A")}</td>
                   <td className="px-6 py-5">
                     <div className="space-y-1">
                       <p className="font-medium">{run.model}</p>
@@ -214,15 +218,15 @@ export function AiRunsTable({ runs }: AiRunsTableProps) {
                   <td className="px-6 py-5">
                     <AiRunEscalationBadge escalated={run.escalated} />
                   </td>
-                  <td className="px-6 py-5 text-[color:var(--muted-foreground)]">{formatDate(run.createdAt)}</td>
+                  <td className="px-6 py-5 text-[color:var(--muted-foreground)]">{formatDate(run.createdAt, intlLocale)}</td>
                 </tr>
               )) : (
                 <tr>
                   <td className="px-6 py-10" colSpan={10}>
                     <EmptyState
-                      description="Try broadening the search or clearing one of the filters."
+                      description={t("aiRuns.noMatchingDescription")}
                       icon={Search}
-                      title="No matching AI runs"
+                      title={t("aiRuns.noMatching")}
                     />
                   </td>
                 </tr>

@@ -13,11 +13,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { resolveOrganizationId, resolveUserRole } from "@/lib/auth/user-metadata";
 import { fetchDashboardSummary, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getServerTranslator } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const { t } = await getServerTranslator();
+
   if (!hasSupabaseEnv()) {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-5xl items-center justify-center px-6 py-12">
@@ -25,7 +28,7 @@ export default async function DashboardPage() {
           <EmptyState
             description="Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to enable login and the operator workspace."
             icon={ShieldCheck}
-            title="Configure Supabase to continue"
+            title={t("common.configureSupabase")}
           />
         </Card>
       </main>
@@ -55,52 +58,52 @@ export default async function DashboardPage() {
             <Link href="/ai-runs">
               <Button variant="secondary">
                 <BrainCircuit className="h-4 w-4" />
-                AI logs
+                {t("common.aiLogs")}
               </Button>
             </Link>
             <Link href="/tickets">
               <Button>
-                Open tickets
+                {t("common.openTickets")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </>
         }
-        description="Monitor ticket throughput, AI quality, and escalation pressure from one premium operator workspace."
-        eyebrow="Dashboard"
-        title="Support operations workspace"
+        description={t("dashboard.description")}
+        eyebrow={t("dashboard.eyebrow")}
+        title={t("dashboard.title")}
       />
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="surface-elevated rounded-[32px]">
           <CardHeader className="gap-4 p-8 pb-2">
             <div className="flex flex-wrap items-center gap-3">
-              <Badge variant="info">Live environment</Badge>
+              <Badge variant="info">{t("common.liveEnvironment")}</Badge>
               <Badge>{role}</Badge>
             </div>
             <CardTitle className="max-w-2xl text-3xl leading-tight md:text-4xl">
-              A calmer control center for AI-assisted support.
+              {t("dashboard.heroTitle")}
             </CardTitle>
             <CardDescription className="max-w-2xl text-sm leading-7">
-              Review routing performance, inspect model behavior, and move quickly between tickets, knowledge, and settings without losing context.
+              {t("dashboard.heroDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 p-8 pt-6 md:grid-cols-3">
             {[
               {
                 icon: Activity,
-                label: "Signed in as",
-                value: user.email ?? "Unknown user",
+                label: t("dashboard.signedInAs"),
+                value: user.email ?? t("common.unknownUser"),
               },
               {
                 icon: ShieldCheck,
-                label: "Role",
+                label: t("dashboard.role"),
                 value: role,
               },
               {
                 icon: Building2,
-                label: "Organization",
-                value: organizationId ?? "Not assigned",
+                label: t("dashboard.organization"),
+                value: organizationId ?? t("common.noOrganization"),
               },
             ].map((item) => {
               const Icon = item.icon;
@@ -120,28 +123,28 @@ export default async function DashboardPage() {
 
         <Card className="rounded-[32px]">
           <CardHeader>
-            <CardTitle>Quick paths</CardTitle>
-            <CardDescription>Jump straight into the parts of the platform operators touch most often.</CardDescription>
+            <CardTitle>{t("dashboard.quickPaths")}</CardTitle>
+            <CardDescription>{t("dashboard.quickPathsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {[
               {
                 href: "/tickets",
                 icon: Ticket,
-                title: "Ticket queue",
-                description: "Review customer issues, internal notes, and AI actions.",
+                title: t("dashboard.quickPathsItems.tickets.title"),
+                description: t("dashboard.quickPathsItems.tickets.description"),
               },
               {
                 href: "/knowledge-base",
                 icon: BookOpen,
-                title: "Knowledge base",
-                description: "Upload, inspect, and manage grounded answer sources.",
+                title: t("dashboard.quickPathsItems.knowledge.title"),
+                description: t("dashboard.quickPathsItems.knowledge.description"),
               },
               {
                 href: "/settings",
                 icon: BrainCircuit,
-                title: "AI configuration",
-                description: "Tune thresholds, retrieval depth, and model behavior.",
+                title: t("dashboard.quickPathsItems.ai.title"),
+                description: t("dashboard.quickPathsItems.ai.description"),
               },
             ].map((item) => {
               const Icon = item.icon;
@@ -172,9 +175,9 @@ export default async function DashboardPage() {
         ) : (
           <Card className="rounded-[28px] p-6">
             <EmptyState
-              description="The workspace loaded, but the metrics request did not return successfully."
+              description={t("dashboard.unableMetricsDescription")}
               icon={Activity}
-              title="Unable to load dashboard metrics"
+              title={t("dashboard.unableMetrics")}
             />
           </Card>
         )}

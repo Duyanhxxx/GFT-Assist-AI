@@ -2,8 +2,10 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 type AuthShellProps = {
   children: ReactNode;
@@ -12,25 +14,27 @@ type AuthShellProps = {
   description: string;
 };
 
-const highlights = [
-  {
-    title: "Explainable AI actions",
-    description: "Every ticket decision stays inspectable with confidence and citation history.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Grounded response workflows",
-    description: "Support replies stay anchored to knowledge retrieval rather than generic chat output.",
-    icon: Sparkles,
-  },
-  {
-    title: "Human-in-the-loop routing",
-    description: "Escalation stays deliberate for urgent, low-confidence, or incomplete customer issues.",
-    icon: Workflow,
-  },
-] as const;
+export async function AuthShell({ children, description, eyebrow, title }: AuthShellProps) {
+  const { t } = await getServerTranslator();
 
-export function AuthShell({ children, description, eyebrow, title }: AuthShellProps) {
+  const highlights = [
+    {
+      title: t("authShell.highlights.explainable.title"),
+      description: t("authShell.highlights.explainable.description"),
+      icon: ShieldCheck,
+    },
+    {
+      title: t("authShell.highlights.grounded.title"),
+      description: t("authShell.highlights.grounded.description"),
+      icon: Sparkles,
+    },
+    {
+      title: t("authShell.highlights.routing.title"),
+      description: t("authShell.highlights.routing.description"),
+      icon: Workflow,
+    },
+  ] as const;
+
   return (
     <main className="mx-auto grid min-h-screen w-full max-w-[1440px] gap-6 px-4 py-4 md:px-6 md:py-6 lg:grid-cols-[1.1fr_0.9fr]">
       <section className="surface-elevated relative overflow-hidden rounded-[32px] p-8 md:p-10">
@@ -40,9 +44,12 @@ export function AuthShell({ children, description, eyebrow, title }: AuthShellPr
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold">GFT-Assist-AI</p>
-                <p className="mt-1 text-sm text-[color:var(--muted)]">Premium support operations platform</p>
+                <p className="mt-1 text-sm text-[color:var(--muted)]">{t("authShell.premiumPlatform")}</p>
               </div>
-              <Badge variant="info">Series A polish</Badge>
+              <div className="flex items-center gap-3">
+                <LanguageSwitcher />
+                <Badge variant="info">{t("authShell.seriesAPolish")}</Badge>
+              </div>
             </div>
 
             <div className="max-w-2xl space-y-4">
@@ -75,11 +82,11 @@ export function AuthShell({ children, description, eyebrow, title }: AuthShellPr
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/submit-ticket">
               <Button variant="secondary">
-                Customer intake
+                {t("common.customerIntake")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <p className="text-sm text-[color:var(--muted)]">Designed for recruiters, operators, and AI auditability.</p>
+            <p className="text-sm text-[color:var(--muted)]">{t("authShell.designedFor")}</p>
           </div>
         </div>
       </section>

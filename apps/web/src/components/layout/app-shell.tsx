@@ -16,9 +16,11 @@ import {
 } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/providers/locale-provider";
 
 type ShellUser = {
   email: string;
@@ -50,6 +52,8 @@ function AppNavigation({
   onNavigate?: () => void;
   pathname: string;
 }) {
+  const { t } = useLocale();
+
   return (
     <nav aria-label="Primary" className="space-y-1">
       {navigation.map((item) => {
@@ -69,7 +73,7 @@ function AppNavigation({
             {...(onNavigate ? { onClick: onNavigate } : {})}
           >
             <Icon className="h-4 w-4" />
-            <span>{item.label}</span>
+            <span>{t(`nav.${item.label === "AI Logs" ? "aiRuns" : item.label === "Knowledge Base" ? "knowledgeBase" : item.label.toLowerCase()}`)}</span>
           </Link>
         );
       })}
@@ -80,10 +84,21 @@ function AppNavigation({
 export function AppShell({ children, user }: AppShellProps) {
   const pathname = usePathname();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const { t } = useLocale();
 
   const activeLabel = useMemo(
-    () => navigation.find((item) => isActivePath(pathname, item.href))?.label ?? "Workspace",
-    [pathname],
+    () => {
+      const active = navigation.find((item) => isActivePath(pathname, item.href))?.href;
+
+      if (active === "/dashboard") return t("nav.dashboard");
+      if (active === "/tickets") return t("nav.tickets");
+      if (active === "/knowledge-base") return t("nav.knowledgeBase");
+      if (active === "/ai-runs") return t("nav.aiRuns");
+      if (active === "/settings") return t("nav.settings");
+
+      return t("common.workspace");
+    },
+    [pathname, t],
   );
 
   return (
@@ -97,7 +112,7 @@ export function AppShell({ children, user }: AppShellProps) {
               </div>
               <div>
                 <p className="text-sm font-semibold">GFT-Assist-AI</p>
-                <p className="text-xs text-[color:var(--muted)]">AI support operations</p>
+                <p className="text-xs text-[color:var(--muted)]">{t("common.operatorWorkspace")}</p>
               </div>
             </div>
           </div>
@@ -110,7 +125,7 @@ export function AppShell({ children, user }: AppShellProps) {
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{user.email}</p>
-                <p className="mt-1 text-xs text-[color:var(--muted)]">{user.organizationId ?? "No organization"}</p>
+                <p className="mt-1 text-xs text-[color:var(--muted)]">{user.organizationId ?? t("common.noOrganization")}</p>
               </div>
               <Badge variant="info">{user.role}</Badge>
             </div>
@@ -132,17 +147,16 @@ export function AppShell({ children, user }: AppShellProps) {
               </Button>
 
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                  Operator workspace
-                </p>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-[color:var(--muted)]">{t("common.operatorWorkspace")}</p>
                 <h1 className="truncate text-lg font-semibold md:text-xl">{activeLabel}</h1>
               </div>
 
               <div className="flex items-center gap-2">
+                <LanguageSwitcher />
                 <Badge>{user.role}</Badge>
                 <div className="hidden rounded-2xl border border-[color:var(--border)] bg-white/60 px-3 py-2 text-right text-xs shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:bg-slate-950/40 md:block">
                   <p className="font-medium text-[color:var(--foreground)]">{user.email}</p>
-                  <p className="text-[color:var(--muted)]">Secure session active</p>
+                  <p className="text-[color:var(--muted)]">{t("common.secureSessionActive")}</p>
                 </div>
               </div>
             </div>
@@ -174,7 +188,7 @@ export function AppShell({ children, user }: AppShellProps) {
               <div className="flex items-center justify-between border-b border-[color:var(--border)] pb-4">
                 <div>
                   <p className="text-sm font-semibold">GFT-Assist-AI</p>
-                  <p className="text-xs text-[color:var(--muted)]">Enterprise workspace</p>
+                  <p className="text-xs text-[color:var(--muted)]">{t("common.operatorWorkspace")}</p>
                 </div>
                 <Button
                   aria-label="Close navigation"
@@ -192,7 +206,7 @@ export function AppShell({ children, user }: AppShellProps) {
 
               <div className="surface rounded-[24px] p-4">
                 <p className="truncate text-sm font-medium">{user.email}</p>
-                <p className="mt-1 text-xs text-[color:var(--muted)]">{user.organizationId ?? "No organization"}</p>
+                <p className="mt-1 text-xs text-[color:var(--muted)]">{user.organizationId ?? t("common.noOrganization")}</p>
                 <SignOutButton className="mt-4 w-full" variant="secondary" />
               </div>
             </motion.aside>

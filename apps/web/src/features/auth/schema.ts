@@ -1,13 +1,19 @@
 import { z } from "zod";
 
-export const loginSchema = z.object({
-  email: z.email("Enter a valid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
+type Translate = (key: string) => string;
 
-export const forgotPasswordSchema = z.object({
-  email: z.email("Enter a valid email address."),
-});
+export function createLoginSchema(t: Translate) {
+  return z.object({
+    email: z.email(t("validation.validEmail")),
+    password: z.string().min(8, t("validation.passwordMin")),
+  });
+}
 
-export type LoginValues = z.infer<typeof loginSchema>;
-export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
+export function createForgotPasswordSchema(t: Translate) {
+  return z.object({
+    email: z.email(t("validation.validEmail")),
+  });
+}
+
+export type LoginValues = z.infer<ReturnType<typeof createLoginSchema>>;
+export type ForgotPasswordValues = z.infer<ReturnType<typeof createForgotPasswordSchema>>;

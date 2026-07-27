@@ -7,8 +7,9 @@ import { ArrowRight, CheckCircle2, FolderKanban, Mail, UserRound } from "lucide-
 
 import type { CreateTicketIntakeInput } from "@gft-assist/types";
 
-import { ticketIntakeSchema, type TicketIntakeValues } from "@/features/tickets/schema";
+import { createTicketIntakeSchema, type TicketIntakeValues } from "@/features/tickets/schema";
 import { createTicketIntake } from "@/lib/api/client";
+import { useLocale } from "@/providers/locale-provider";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +17,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 export function TicketIntakeForm() {
+  const { t } = useLocale();
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const ticketIntakeSchema = createTicketIntakeSchema(t);
   const form = useForm<TicketIntakeValues>({
     defaultValues: {
       organizationSlug: "",
@@ -65,7 +68,7 @@ export function TicketIntakeForm() {
 
       await createTicketIntake(payload);
       form.reset();
-      setStatus("Your request has been received.");
+      setStatus(t("publicIntake.success"));
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "Unable to submit request.");
     } finally {
@@ -76,9 +79,9 @@ export function TicketIntakeForm() {
   return (
     <Card className="w-full max-w-2xl rounded-[32px]">
       <CardHeader className="gap-3 p-8 pb-4">
-        <CardTitle className="text-2xl md:text-3xl">Submit a support request</CardTitle>
+        <CardTitle className="text-2xl md:text-3xl">{t("publicIntake.formTitle")}</CardTitle>
         <CardDescription className="text-sm leading-7">
-          Give your support team enough detail to classify, prioritize, and route the issue correctly the first time.
+          {t("publicIntake.formDescription")}
         </CardDescription>
       </CardHeader>
 
@@ -87,18 +90,18 @@ export function TicketIntakeForm() {
           {[
             {
               icon: FolderKanban,
-              label: "Workspace",
-              helper: "Tell us which organization queue should receive the request.",
+              label: t("publicIntake.cards.workspace.label"),
+              helper: t("publicIntake.cards.workspace.helper"),
             },
             {
               icon: Mail,
-              label: "Contact",
-              helper: "We use your email to send updates and ask for clarification if needed.",
+              label: t("publicIntake.cards.contact.label"),
+              helper: t("publicIntake.cards.contact.helper"),
             },
             {
               icon: UserRound,
-              label: "Context",
-              helper: "A clear subject and description help triage happen faster.",
+              label: t("publicIntake.cards.context.label"),
+              helper: t("publicIntake.cards.context.helper"),
             },
           ].map((item) => {
             const Icon = item.icon;
@@ -118,71 +121,71 @@ export function TicketIntakeForm() {
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
           <section className="rounded-[28px] border border-[color:var(--border)] bg-white/55 p-5 dark:bg-slate-950/35">
             <div className="mb-5">
-              <p className="text-sm font-semibold">Routing information</p>
+              <p className="text-sm font-semibold">{t("publicIntake.routingTitle")}</p>
               <p className="mt-1 text-sm text-[color:var(--muted)]">
-                These fields tell the system where the request belongs and how to reach you.
+                {t("publicIntake.routingDescription")}
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <Field
                 error={form.formState.errors.organizationSlug?.message}
-                helper="The workspace identifier for your support team."
+                helper={t("publicIntake.organizationSlugHelper")}
                 htmlFor="organizationSlug"
-                label="Organization slug"
+                label={t("publicIntake.organizationSlug")}
               >
-                <Input id="organizationSlug" placeholder="acme-support" {...form.register("organizationSlug")} />
+                <Input id="organizationSlug" placeholder={t("publicIntake.placeholders.organizationSlug")} {...form.register("organizationSlug")} />
               </Field>
 
               <Field
                 error={form.formState.errors.requesterEmail?.message}
-                helper="We’ll use this address for updates on your request."
+                helper={t("publicIntake.emailHelper")}
                 htmlFor="requesterEmail"
-                label="Email"
+                label={t("common.email")}
               >
-                <Input id="requesterEmail" placeholder="you@company.com" type="email" {...form.register("requesterEmail")} />
+                <Input id="requesterEmail" placeholder={t("publicIntake.placeholders.email")} type="email" {...form.register("requesterEmail")} />
               </Field>
             </div>
 
             <div className="mt-4">
               <Field
                 error={form.formState.errors.requesterName?.message}
-                helper="Optional, but helpful for faster routing."
+                helper={t("publicIntake.nameHelper")}
                 htmlFor="requesterName"
-                label="Name"
+                label={t("publicIntake.name")}
               >
-                <Input id="requesterName" placeholder="Jane Doe" {...form.register("requesterName")} />
+                <Input id="requesterName" placeholder={t("publicIntake.placeholders.name")} {...form.register("requesterName")} />
               </Field>
             </div>
           </section>
 
           <section className="rounded-[28px] border border-[color:var(--border)] bg-white/55 p-5 dark:bg-slate-950/35">
             <div className="mb-5">
-              <p className="text-sm font-semibold">Issue details</p>
+              <p className="text-sm font-semibold">{t("publicIntake.issueTitle")}</p>
               <p className="mt-1 text-sm text-[color:var(--muted)]">
-                Describe the problem clearly so the ticket can be triaged accurately.
+                {t("publicIntake.issueDescription")}
               </p>
             </div>
 
             <div className="space-y-4">
               <Field
                 error={form.formState.errors.subject?.message}
-                helper="A short summary of the issue."
+                helper={t("publicIntake.subjectHelper")}
                 htmlFor="subject"
-                label="Subject"
+                label={t("publicIntake.subject")}
               >
-                <Input id="subject" placeholder="Unable to access billing settings" {...form.register("subject")} />
+                <Input id="subject" placeholder={t("publicIntake.placeholders.subject")} {...form.register("subject")} />
               </Field>
 
               <Field
                 error={form.formState.errors.description?.message}
-                helper="Include what happened, what you expected, and any relevant steps or errors."
+                helper={t("publicIntake.descriptionHelper")}
                 htmlFor="description"
-                label="Description"
+                label={t("publicIntake.descriptionField")}
               >
                 <Textarea
                   id="description"
-                  placeholder="Describe the issue in as much detail as you can. Include steps to reproduce, relevant timestamps, and the impact on your work."
+                  placeholder={t("publicIntake.placeholders.description")}
                   {...form.register("description")}
                 />
               </Field>
@@ -197,7 +200,7 @@ export function TicketIntakeForm() {
           {error ? <Alert variant="danger">{error}</Alert> : null}
 
           <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
-            {isSubmitting ? "Submitting..." : "Submit ticket"}
+            {isSubmitting ? t("common.submitting") : t("common.submitTicket")}
             {!isSubmitting ? <ArrowRight className="h-4 w-4" /> : null}
           </Button>
         </form>

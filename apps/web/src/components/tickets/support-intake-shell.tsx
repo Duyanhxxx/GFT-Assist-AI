@@ -2,32 +2,36 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, MessageSquareText, ShieldCheck, Sparkles } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 type SupportIntakeShellProps = {
   children: ReactNode;
 };
 
-const highlights = [
-  {
-    title: "Clear intake",
-    description: "A structured request gives your support team better context from the start.",
-    icon: MessageSquareText,
-  },
-  {
-    title: "Grounded resolution",
-    description: "The platform uses reviewed knowledge sources to help generate more reliable answers.",
-    icon: Sparkles,
-  },
-  {
-    title: "Escalation when needed",
-    description: "Low-confidence or urgent issues can be surfaced for human attention quickly.",
-    icon: ShieldCheck,
-  },
-] as const;
+export async function SupportIntakeShell({ children }: SupportIntakeShellProps) {
+  const { t } = await getServerTranslator();
 
-export function SupportIntakeShell({ children }: SupportIntakeShellProps) {
+  const highlights = [
+    {
+      title: t("publicIntake.shellCards.intake.title"),
+      description: t("publicIntake.shellCards.intake.description"),
+      icon: MessageSquareText,
+    },
+    {
+      title: t("publicIntake.shellCards.grounded.title"),
+      description: t("publicIntake.shellCards.grounded.description"),
+      icon: Sparkles,
+    },
+    {
+      title: t("publicIntake.shellCards.escalation.title"),
+      description: t("publicIntake.shellCards.escalation.description"),
+      icon: ShieldCheck,
+    },
+  ] as const;
+
   return (
     <main className="mx-auto grid min-h-screen w-full max-w-[1440px] gap-6 px-4 py-4 md:px-6 md:py-6 lg:grid-cols-[1fr_0.95fr]">
       <section className="surface-elevated relative overflow-hidden rounded-[32px] p-8 md:p-10">
@@ -37,20 +41,18 @@ export function SupportIntakeShell({ children }: SupportIntakeShellProps) {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold">GFT-Assist-AI</p>
-                <p className="mt-1 text-sm text-[color:var(--muted)]">Customer support request portal</p>
+                <p className="mt-1 text-sm text-[color:var(--muted)]">{t("publicIntake.portal")}</p>
               </div>
-              <Badge variant="info">Public intake</Badge>
+              <div className="flex items-center gap-3">
+                <LanguageSwitcher />
+                <Badge variant="info">{t("publicIntake.badge")}</Badge>
+              </div>
             </div>
 
             <div className="max-w-2xl space-y-4">
-              <p className="text-sm font-medium uppercase tracking-[0.24em] text-[color:var(--muted)]">Support request</p>
-              <h1 className="max-w-xl text-4xl font-semibold tracking-tight md:text-5xl">
-                Get your issue to the right team with less back-and-forth.
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-[color:var(--muted-foreground)] md:text-lg">
-                Share what happened, how we can reach you, and enough detail for the support workflow to classify,
-                prioritize, and route your request correctly.
-              </p>
+              <p className="text-sm font-medium uppercase tracking-[0.24em] text-[color:var(--muted)]">{t("publicIntake.eyebrow")}</p>
+              <h1 className="max-w-xl text-4xl font-semibold tracking-tight md:text-5xl">{t("publicIntake.title")}</h1>
+              <p className="max-w-2xl text-base leading-7 text-[color:var(--muted-foreground)] md:text-lg">{t("publicIntake.description")}</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -73,11 +75,11 @@ export function SupportIntakeShell({ children }: SupportIntakeShellProps) {
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/login">
               <Button variant="secondary">
-                Operator sign in
+                {t("common.operatorSignIn")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <p className="text-sm text-[color:var(--muted)]">Use this page for customer intake only.</p>
+            <p className="text-sm text-[color:var(--muted)]">{t("publicIntake.customerOnly")}</p>
           </div>
         </div>
       </section>

@@ -9,10 +9,13 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { fetchAiRuns, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function AiRunsPage() {
+  const { t } = await getServerTranslator();
+
   if (!hasSupabaseEnv()) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-12">
@@ -20,7 +23,7 @@ export default async function AiRunsPage() {
           <EmptyState
             description="Authentication must be configured before AI audit logs can load."
             icon={BrainCircuit}
-            title="Configure Supabase to continue"
+            title={t("common.configureSupabase")}
           />
         </Card>
       </main>
@@ -43,33 +46,33 @@ export default async function AiRunsPage() {
             <Link href="/settings">
               <Button variant="secondary">
                 <Settings2 className="h-4 w-4" />
-                Settings
+                {t("common.settings")}
               </Button>
             </Link>
             <Link href="/dashboard">
               <Button>
-                Dashboard
+                {t("common.dashboard")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </>
         }
-        description="Audit how the AI layer behaves in production, including latency, confidence, escalation decisions, and prompt lineage."
-        eyebrow="AI logs"
-        title="AI run observability"
+        description={t("aiRuns.description")}
+        eyebrow={t("aiRuns.eyebrow")}
+        title={t("aiRuns.title")}
       />
 
       <Card className="surface-elevated rounded-[32px] p-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm font-semibold">Audit console</p>
+            <p className="text-sm font-semibold">{t("aiRuns.consoleTitle")}</p>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-[color:var(--muted)]">
-              This view is optimized for recruiter review and operator trust: it makes AI outcomes easier to inspect without changing the append-only backend log model.
+              {t("aiRuns.consoleDescription")}
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--muted-foreground)]">
             <BrainCircuit className="h-4 w-4" />
-            Live AI decision history
+            {t("aiRuns.consoleBadge")}
           </div>
         </div>
       </Card>
@@ -82,7 +85,7 @@ export default async function AiRunsPage() {
             <EmptyState
               description="The AI run log request did not return successfully."
               icon={BrainCircuit}
-              title="Unable to load AI run logs"
+              title={t("system.unableAiRuns")}
             />
           </Card>
         )}

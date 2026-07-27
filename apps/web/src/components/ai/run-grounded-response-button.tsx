@@ -6,6 +6,7 @@ import { FileText } from "lucide-react";
 
 import { runGroundedResponse } from "@/lib/api/client";
 import { createClient } from "@/lib/supabase/browser";
+import { useLocale } from "@/providers/locale-provider";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +16,7 @@ type RunGroundedResponseButtonProps = {
 
 export function RunGroundedResponseButton({ ticketId }: RunGroundedResponseButtonProps) {
   const router = useRouter();
+  const { t } = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,14 +31,14 @@ export function RunGroundedResponseButton({ ticketId }: RunGroundedResponseButto
       } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
-        setError("Your session has expired.");
+        setError(t("auth.sessionExpired"));
         return;
       }
 
       await runGroundedResponse(ticketId, session.access_token);
       router.refresh();
     } catch (submissionError) {
-      setError(submissionError instanceof Error ? submissionError.message : "Unable to generate grounded response.");
+      setError(submissionError instanceof Error ? submissionError.message : t("system.unableGenerateGroundedResponse"));
     } finally {
       setIsSubmitting(false);
     }
@@ -46,7 +48,7 @@ export function RunGroundedResponseButton({ ticketId }: RunGroundedResponseButto
     <div className="space-y-2">
       <Button className="w-full" disabled={isSubmitting} onClick={onRun} size="lg" variant="secondary">
         <FileText className="h-4 w-4" />
-        {isSubmitting ? "Generating response..." : "Generate grounded response"}
+        {isSubmitting ? t("common.generatingResponse") : t("common.generateGroundedResponse")}
       </Button>
       {error ? <Alert className="py-2" variant="danger">{error}</Alert> : null}
     </div>

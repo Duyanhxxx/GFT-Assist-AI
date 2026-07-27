@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { getIntlLocale } from "@/lib/i18n/config";
+import { useLocale } from "@/providers/locale-provider";
 
 type TicketsTableProps = {
   tickets: TicketListItem[];
@@ -20,14 +22,16 @@ type TicketsTableProps = {
 
 const PAGE_SIZE = 8;
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
 }
 
 export function TicketsTable({ tickets }: TicketsTableProps) {
+  const { locale, t } = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
@@ -83,9 +87,9 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
     return (
       <Card className="rounded-[28px] p-6">
         <EmptyState
-          description="New customer requests will appear here once tickets are created for this organization."
+          description={t("tickets.noTicketsDescription")}
           icon={Ticket}
-          title="No tickets yet"
+          title={t("tickets.noTickets")}
         />
       </Card>
     );
@@ -95,9 +99,9 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         {[
-          { label: "Queue volume", value: summary.total, icon: Ticket, helper: "All tickets in the current workspace." },
-          { label: "Critical attention", value: summary.critical, icon: TriangleAlert, helper: "Urgent and critical tickets needing rapid review." },
-          { label: "AI scored", value: summary.triaged, icon: Sparkles, helper: "Tickets with confidence already recorded." },
+          { label: t("tickets.queueCards.volume"), value: summary.total, icon: Ticket, helper: t("tickets.queueCards.volumeHelper") },
+          { label: t("tickets.queueCards.critical"), value: summary.critical, icon: TriangleAlert, helper: t("tickets.queueCards.criticalHelper") },
+          { label: t("tickets.queueCards.triaged"), value: summary.triaged, icon: Sparkles, helper: t("tickets.queueCards.triagedHelper") },
         ].map((item) => {
           const Icon = item.icon;
 
@@ -122,14 +126,14 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
         <CardHeader className="gap-4 border-b border-[color:var(--border)] p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <CardTitle className="text-xl">Operator queue</CardTitle>
+              <CardTitle className="text-xl">{t("tickets.operatorQueue")}</CardTitle>
               <p className="mt-1 text-sm text-[color:var(--muted)]">
-                Search, filter, and prioritize the current queue without changing backend behavior.
+                {t("tickets.operatorQueueDescription")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge>{filteredTickets.length} visible</Badge>
-              <Badge variant="info">Page {currentPage} of {pageCount}</Badge>
+              <Badge>{t("common.visibleCount", { count: filteredTickets.length })}</Badge>
+              <Badge variant="info">{t("common.pageCount", { page: currentPage, total: pageCount })}</Badge>
             </div>
           </div>
 
@@ -142,7 +146,7 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
                   setQuery(event.target.value);
                   setPage(1);
                 }}
-                placeholder="Search subject, requester, or intent"
+                placeholder={t("common.searchSubjectRequesterIntent")}
                 value={query}
               />
             </div>
@@ -153,10 +157,10 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
               }}
               value={statusFilter}
             >
-              <option value="ALL">All statuses</option>
+              <option value="ALL">{t("common.allStatuses")}</option>
               {Array.from(new Set(tickets.map((ticket) => ticket.status))).map((status) => (
                 <option key={status} value={status}>
-                  {status.replaceAll("_", " ")}
+                  {t(`tickets.statuses.${status}`)}
                 </option>
               ))}
             </Select>
@@ -167,18 +171,18 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
               }}
               value={priorityFilter}
             >
-              <option value="ALL">All priorities</option>
+              <option value="ALL">{t("common.allPriorities")}</option>
               {Array.from(new Set(tickets.map((ticket) => ticket.priority))).map((priority) => (
                 <option key={priority} value={priority}>
-                  {priority}
+                  {t(`tickets.priorities.${priority}`)}
                 </option>
               ))}
             </Select>
             <Select onChange={(event) => setSort(event.target.value)} value={sort}>
-              <option value="updated-desc">Newest activity</option>
-              <option value="updated-asc">Oldest activity</option>
-              <option value="confidence-desc">Highest confidence</option>
-              <option value="priority-desc">Highest priority</option>
+              <option value="updated-desc">{t("common.newestActivity")}</option>
+              <option value="updated-asc">{t("common.oldestActivity")}</option>
+              <option value="confidence-desc">{t("common.highestConfidence")}</option>
+              <option value="priority-desc">{t("common.highestPriority")}</option>
             </Select>
           </div>
         </CardHeader>
@@ -187,14 +191,14 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
           <table className="min-w-full text-sm">
             <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl dark:bg-slate-950/70">
               <tr className="border-b border-[color:var(--border)] text-left text-[color:var(--muted)]">
-                <th className="px-6 py-4 font-medium">Ticket</th>
-                <th className="px-6 py-4 font-medium">Requester</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Priority</th>
-                <th className="px-6 py-4 font-medium">Confidence</th>
+                <th className="px-6 py-4 font-medium">{t("tickets.table.ticket")}</th>
+                <th className="px-6 py-4 font-medium">{t("tickets.table.requester")}</th>
+                <th className="px-6 py-4 font-medium">{t("tickets.table.status")}</th>
+                <th className="px-6 py-4 font-medium">{t("tickets.table.priority")}</th>
+                <th className="px-6 py-4 font-medium">{t("tickets.table.confidence")}</th>
                 <th className="px-6 py-4 font-medium">
                   <span className="inline-flex items-center gap-2">
-                    Updated
+                    {t("tickets.table.updated")}
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </span>
                 </th>
@@ -212,13 +216,13 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
                         {ticket.subject}
                       </Link>
                       <div className="flex flex-wrap items-center gap-2">
-                        {ticket.intentLabel ? <Badge>{ticket.intentLabel}</Badge> : <Badge>No intent</Badge>}
+                        {ticket.intentLabel ? <Badge>{ticket.intentLabel}</Badge> : <Badge>{t("common.noIntent")}</Badge>}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-5 text-[color:var(--muted-foreground)]">
                     <div className="space-y-1">
-                      <p className="font-medium text-[color:var(--foreground)]">{ticket.requesterName ?? "Unknown requester"}</p>
+                      <p className="font-medium text-[color:var(--foreground)]">{ticket.requesterName ?? t("common.unknownRequester")}</p>
                       <p>{ticket.requesterEmail}</p>
                     </div>
                   </td>
@@ -231,15 +235,15 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
                   <td className="px-6 py-5">
                     <TicketConfidenceBadge score={ticket.confidenceScore} />
                   </td>
-                  <td className="px-6 py-5 text-[color:var(--muted-foreground)]">{formatDate(ticket.updatedAt)}</td>
+                  <td className="px-6 py-5 text-[color:var(--muted-foreground)]">{formatDate(ticket.updatedAt, intlLocale)}</td>
                 </tr>
               )) : (
                 <tr>
                   <td className="px-6 py-10" colSpan={6}>
                     <EmptyState
-                      description="Try widening the search or removing one of the active filters."
+                      description={t("tickets.noMatchingDescription")}
                       icon={Search}
-                      title="No matching tickets"
+                      title={t("tickets.noMatching")}
                     />
                   </td>
                 </tr>
@@ -260,14 +264,14 @@ export function TicketsTable({ tickets }: TicketsTableProps) {
               variant="secondary"
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t("common.previous")}
             </Button>
             <Button
               disabled={currentPage === pageCount}
               onClick={() => setPage((value) => Math.min(pageCount, value + 1))}
               variant="secondary"
             >
-              Next
+              {t("common.next")}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

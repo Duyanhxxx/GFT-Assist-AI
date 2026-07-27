@@ -6,6 +6,7 @@ import { BrainCircuit } from "lucide-react";
 
 import { runTicketTriage } from "@/lib/api/client";
 import { createClient } from "@/lib/supabase/browser";
+import { useLocale } from "@/providers/locale-provider";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +16,7 @@ type RunTriageButtonProps = {
 
 export function RunTriageButton({ ticketId }: RunTriageButtonProps) {
   const router = useRouter();
+  const { t } = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,14 +31,14 @@ export function RunTriageButton({ ticketId }: RunTriageButtonProps) {
       } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
-        setError("Your session has expired.");
+        setError(t("auth.sessionExpired"));
         return;
       }
 
       await runTicketTriage(ticketId, session.access_token);
       router.refresh();
     } catch (submissionError) {
-      setError(submissionError instanceof Error ? submissionError.message : "Unable to run triage.");
+      setError(submissionError instanceof Error ? submissionError.message : t("system.unableRunTriage"));
     } finally {
       setIsSubmitting(false);
     }
@@ -46,7 +48,7 @@ export function RunTriageButton({ ticketId }: RunTriageButtonProps) {
     <div className="space-y-2">
       <Button className="w-full" disabled={isSubmitting} onClick={onRun} size="lg">
         <BrainCircuit className="h-4 w-4" />
-        {isSubmitting ? "Running triage..." : "Run Gemini triage"}
+        {isSubmitting ? t("common.runningTriage") : t("common.runGeminiTriage")}
       </Button>
       {error ? <Alert className="py-2" variant="danger">{error}</Alert> : null}
     </div>

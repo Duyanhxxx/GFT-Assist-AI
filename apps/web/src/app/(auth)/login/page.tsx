@@ -1,12 +1,15 @@
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
+import { getServerTranslator } from "@/lib/i18n/server";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const { t } = await getServerTranslator();
+
   return (
     <AuthShell
-      description="Move from customer request intake to grounded AI-assisted resolution with clear auditability, strong operator controls, and a product experience that feels ready for production."
-      eyebrow="Authentication"
-      title="A cleaner support workspace for faster, safer decisions."
+      description={t("authShell.descriptionLogin")}
+      eyebrow={t("authShell.eyebrowLogin")}
+      title={t("authShell.titleLogin")}
     >
       <LoginForm />
     </AuthShell>

@@ -5,16 +5,19 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { ArrowRight } from "lucide-react";
 
-import { loginSchema, type LoginValues } from "@/features/auth/schema";
+import { createLoginSchema, type LoginValues } from "@/features/auth/schema";
 import { createClient } from "@/lib/supabase/browser";
+import { useLocale } from "@/providers/locale-provider";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 export function LoginForm() {
+  const { t } = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const loginSchema = createLoginSchema(t);
   const form = useForm<LoginValues>({
     defaultValues: {
       email: "",
@@ -60,9 +63,9 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-lg rounded-[32px]">
       <CardHeader className="gap-3 p-8 pb-4">
-        <CardTitle className="text-2xl md:text-3xl">Sign in</CardTitle>
+        <CardTitle className="text-2xl md:text-3xl">{t("auth.signIn")}</CardTitle>
         <CardDescription className="text-sm leading-6">
-          Access the operator workspace, AI monitoring, and organization controls.
+          {t("auth.signInDescription")}
         </CardDescription>
       </CardHeader>
 
@@ -70,7 +73,7 @@ export function LoginForm() {
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-2">
             <label className="text-sm font-medium text-[color:var(--muted-foreground)]" htmlFor="email">
-              Work email
+              {t("auth.workEmail")}
             </label>
             <Input autoComplete="email" id="email" placeholder="ops@company.com" type="email" {...form.register("email")} />
             <p className="min-h-5 text-sm text-rose-600">{form.formState.errors.email?.message}</p>
@@ -79,10 +82,10 @@ export function LoginForm() {
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
               <label className="text-sm font-medium text-[color:var(--muted-foreground)]" htmlFor="password">
-                Password
+                {t("auth.password")}
               </label>
               <Link className="text-sm font-medium text-[color:var(--foreground)] hover:opacity-75" href="/forgot-password">
-                Forgot password?
+                {t("auth.forgotPassword")}
               </Link>
             </div>
             <Input autoComplete="current-password" id="password" type="password" {...form.register("password")} />
@@ -92,7 +95,7 @@ export function LoginForm() {
           {error ? <Alert variant="danger">{error}</Alert> : null}
 
           <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
-            {isSubmitting ? "Signing in..." : "Enter workspace"}
+            {isSubmitting ? t("common.signingIn") : t("common.enterWorkspace")}
             {!isSubmitting ? <ArrowRight className="h-4 w-4" /> : null}
           </Button>
         </form>

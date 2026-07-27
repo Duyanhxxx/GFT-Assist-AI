@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EmptyState } from "@/components/ui/empty-state";
 import { fetchTicket, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,8 @@ type TicketPageProps = {
 };
 
 export default async function TicketPage({ params }: TicketPageProps) {
+  const { t } = await getServerTranslator();
+
   if (!hasSupabaseEnv()) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-12">
@@ -29,7 +32,7 @@ export default async function TicketPage({ params }: TicketPageProps) {
           <EmptyState
             description="Authentication must be configured before the ticket workspace can load."
             icon={BrainCircuit}
-            title="Configure Supabase to continue"
+            title={t("common.configureSupabase")}
           />
         </Card>
       </main>
@@ -56,29 +59,29 @@ export default async function TicketPage({ params }: TicketPageProps) {
           <Link href="/tickets">
             <Button variant="secondary">
               <ArrowLeft className="h-4 w-4" />
-              Back to queue
+              {t("common.backToQueue")}
             </Button>
           </Link>
         }
-        description="Review the full customer context, inspect AI-derived signals, and run ticket actions from one audit-friendly view."
-        eyebrow="Ticket detail"
+        description={t("tickets.detailDescription")}
+        eyebrow={t("common.ticketDetail")}
         title={response.data.ticket.subject}
       />
 
       <section className="grid gap-6 xl:grid-cols-[1fr_320px]">
         <Card className="surface-elevated rounded-[32px]">
           <CardHeader>
-            <CardTitle>Operator actions</CardTitle>
-            <CardDescription>Trigger AI triage or generate a grounded reply using the existing backend workflow.</CardDescription>
+            <CardTitle>{t("tickets.operatorActions")}</CardTitle>
+            <CardDescription>{t("tickets.operatorActionsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="rounded-[28px] border border-[color:var(--border)] p-5">
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950/5 dark:bg-white/8">
                 <BrainCircuit className="h-4 w-4" />
               </div>
-              <p className="text-sm font-semibold">Gemini triage</p>
+              <p className="text-sm font-semibold">{t("tickets.geminiTriage")}</p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
-                Re-run classification, urgency, sentiment, and confidence for this case.
+                {t("tickets.geminiTriageDescription")}
               </p>
               <div className="mt-4">
                 <RunTriageButton ticketId={ticketId} />
@@ -89,9 +92,9 @@ export default async function TicketPage({ params }: TicketPageProps) {
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950/5 dark:bg-white/8">
                 <FileText className="h-4 w-4" />
               </div>
-              <p className="text-sm font-semibold">Grounded response</p>
+              <p className="text-sm font-semibold">{t("tickets.groundedResponse")}</p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
-                Generate a support reply tied to retrieved knowledge and visible citations.
+                {t("tickets.groundedResponseDescription")}
               </p>
               <div className="mt-4">
                 <RunGroundedResponseButton ticketId={ticketId} />
@@ -101,9 +104,9 @@ export default async function TicketPage({ params }: TicketPageProps) {
         </Card>
 
         <Card className="rounded-[32px] p-6">
-          <p className="text-sm font-semibold">Workflow note</p>
+          <p className="text-sm font-semibold">{t("tickets.workflowNote")}</p>
           <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">
-            This screen preserves the existing backend flow. The UI is only making the operator path more legible and faster to scan.
+            {t("tickets.workflowNoteDescription")}
           </p>
         </Card>
       </section>

@@ -12,13 +12,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { getIntlLocale } from "@/lib/i18n/config";
+import { useLocale } from "@/providers/locale-provider";
 
 type DocumentListProps = {
   documents: KnowledgeDocumentListItem[];
 };
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
@@ -41,6 +43,8 @@ function formatBytes(value: number | null | undefined) {
 }
 
 export function DocumentList({ documents }: DocumentListProps) {
+  const { locale, t } = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
@@ -62,9 +66,9 @@ export function DocumentList({ documents }: DocumentListProps) {
     return (
       <Card className="rounded-[28px] p-6">
         <EmptyState
-          description="Upload a PDF, DOCX, TXT, or Markdown file to start building the retrieval library."
+          description={t("knowledge.noDocumentsDescription")}
           icon={Database}
-          title="No documents uploaded"
+          title={t("knowledge.noDocuments")}
         />
       </Card>
     );
@@ -75,14 +79,14 @@ export function DocumentList({ documents }: DocumentListProps) {
       <CardHeader className="gap-4 border-b border-[color:var(--border)] p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <CardTitle className="text-xl">Document library</CardTitle>
+              <CardTitle className="text-xl">{t("knowledge.libraryTitle")}</CardTitle>
             <p className="mt-1 text-sm text-[color:var(--muted)]">
-              Review ingestion status, chunk readiness, and source metadata before using documents in grounded responses.
+                {t("knowledge.libraryDescription")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge>{filteredDocuments.length} visible</Badge>
-            <Badge variant="info">{documents.filter((document) => document.status === "READY").length} ready</Badge>
+              <Badge>{t("common.visibleCount", { count: filteredDocuments.length })}</Badge>
+              <Badge variant="info">{t("knowledge.readyCount", { count: documents.filter((document) => document.status === "READY").length })}</Badge>
           </div>
         </div>
 
@@ -92,15 +96,15 @@ export function DocumentList({ documents }: DocumentListProps) {
             <Input
               className="pl-11"
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search title or file name"
+              placeholder={t("common.searchTitleFileName")}
               value={query}
             />
           </div>
           <Select onChange={(event) => setStatusFilter(event.target.value)} value={statusFilter}>
-            <option value="ALL">All statuses</option>
+            <option value="ALL">{t("common.allStatuses")}</option>
             {Array.from(new Set(documents.map((document) => document.status))).map((status) => (
               <option key={status} value={status}>
-                {status.replaceAll("_", " ")}
+                {t(`knowledge.statuses.${status}`)}
               </option>
             ))}
           </Select>
@@ -112,11 +116,11 @@ export function DocumentList({ documents }: DocumentListProps) {
           <table className="min-w-full text-sm">
             <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl dark:bg-slate-950/70">
               <tr className="border-b border-[color:var(--border)] text-left text-[color:var(--muted)]">
-                <th className="px-6 py-4 font-medium">Document</th>
-                <th className="px-6 py-4 font-medium">Type</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Chunks</th>
-                <th className="px-6 py-4 font-medium">Uploaded</th>
+                <th className="px-6 py-4 font-medium">{t("knowledge.table.document")}</th>
+                <th className="px-6 py-4 font-medium">{t("knowledge.table.type")}</th>
+                <th className="px-6 py-4 font-medium">{t("knowledge.table.status")}</th>
+                <th className="px-6 py-4 font-medium">{t("knowledge.table.chunks")}</th>
+                <th className="px-6 py-4 font-medium">{t("knowledge.table.uploaded")}</th>
               </tr>
             </thead>
             <tbody>
@@ -131,7 +135,7 @@ export function DocumentList({ documents }: DocumentListProps) {
                         {document.title}
                       </Link>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--muted)]">
-                        <span>{document.metadata?.fileName ?? "Unknown file"}</span>
+                        <span>{document.metadata?.fileName ?? t("system.unknownFile")}</span>
                         <span>•</span>
                         <span>{formatBytes(document.metadata?.sizeBytes)}</span>
                       </div>
@@ -146,7 +150,7 @@ export function DocumentList({ documents }: DocumentListProps) {
                       {document.processedAt ? (
                         <div className="inline-flex items-center gap-2 text-xs text-[color:var(--muted)]">
                           <Clock3 className="h-3.5 w-3.5" />
-                          Processed {formatDate(document.processedAt)}
+                          {t("knowledge.processedAt", { date: formatDate(document.processedAt, intlLocale) })}
                         </div>
                       ) : null}
                     </div>
@@ -159,13 +163,13 @@ export function DocumentList({ documents }: DocumentListProps) {
                   </td>
                   <td className="px-6 py-5">
                     <div className="space-y-2">
-                      <p className="text-sm text-[color:var(--muted-foreground)]">{formatDate(document.createdAt)}</p>
+                      <p className="text-sm text-[color:var(--muted-foreground)]">{formatDate(document.createdAt, intlLocale)}</p>
                       <Link
                         className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--foreground)] hover:opacity-75"
                         href={`/knowledge-base/${document.id}`}
                       >
                         <FileSearch className="h-4 w-4" />
-                        Inspect chunks
+                        {t("knowledge.table.inspectChunks")}
                       </Link>
                     </div>
                   </td>
@@ -174,9 +178,9 @@ export function DocumentList({ documents }: DocumentListProps) {
                 <tr>
                   <td className="px-6 py-10" colSpan={5}>
                     <EmptyState
-                      description="Try adjusting the search query or clearing the status filter."
+                      description={t("knowledge.noMatchingDescription")}
                       icon={Search}
-                      title="No matching documents"
+                      title={t("knowledge.noMatching")}
                     />
                   </td>
                 </tr>

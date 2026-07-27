@@ -1,3 +1,5 @@
+"use client";
+
 import type { KnowledgeDocumentDetail } from "@gft-assist/types";
 import { Database, FileCode2, FileSearch, FolderKanban, HardDrive, Text, TriangleAlert } from "lucide-react";
 
@@ -6,17 +8,19 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { getIntlLocale } from "@/lib/i18n/config";
+import { useLocale } from "@/providers/locale-provider";
 
 type DocumentDetailProps = {
   document: KnowledgeDocumentDetail;
 };
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, locale: string, fallback: string) {
   if (!value) {
-    return "Not processed";
+    return fallback;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
@@ -39,6 +43,9 @@ function formatBytes(value: number | null | undefined) {
 }
 
 export function DocumentDetail({ document }: DocumentDetailProps) {
+  const { locale, t } = useLocale();
+  const intlLocale = getIntlLocale(locale);
+
   return (
     <div className="space-y-6">
       <Card className="surface-elevated rounded-[32px]">
@@ -46,12 +53,12 @@ export function DocumentDetail({ document }: DocumentDetailProps) {
           <div className="flex flex-wrap items-center gap-2">
             <DocumentTypeBadge sourceType={document.sourceType} />
             <DocumentStatusBadge status={document.status} />
-            <Badge>{document.metadata?.chunkCount ?? document.chunks.length} chunks</Badge>
+            <Badge>{t("knowledge.sourceMetadata.chunkCoverageDescription", { count: document.metadata?.chunkCount ?? document.chunks.length })}</Badge>
           </div>
           <div className="space-y-3">
             <CardTitle className="text-3xl leading-tight md:text-4xl">{document.title}</CardTitle>
             <CardDescription className="text-sm leading-7">
-              Inspect the raw source, ingestion status, and chunk previews that power grounded response generation.
+              {t("knowledge.detailHeroDescription")}
             </CardDescription>
           </div>
         </CardHeader>
@@ -60,27 +67,27 @@ export function DocumentDetail({ document }: DocumentDetailProps) {
           {[
             {
               icon: FileCode2,
-              label: "File name",
-              value: document.metadata?.fileName ?? "Unknown source",
+              label: t("knowledge.sourceMetadata.fileName"),
+              value: document.metadata?.fileName ?? t("knowledge.sourceMetadata.unknownSource"),
               helper: document.mimeType,
             },
             {
               icon: HardDrive,
-              label: "File size",
+              label: t("knowledge.sourceMetadata.fileSize"),
               value: formatBytes(document.metadata?.sizeBytes),
-              helper: "Original upload size",
+              helper: t("knowledge.sourceMetadata.originalUploadSize"),
             },
             {
               icon: Database,
-              label: "Characters",
-              value: document.metadata?.characterCount?.toLocaleString("en-US") ?? "0",
-              helper: "Parsed text volume",
+              label: t("knowledge.sourceMetadata.characters"),
+              value: document.metadata?.characterCount?.toLocaleString(intlLocale) ?? "0",
+              helper: t("knowledge.sourceMetadata.parsedTextVolume"),
             },
             {
               icon: FolderKanban,
-              label: "Processed",
-              value: formatDate(document.processedAt),
-              helper: "Latest ingestion status",
+              label: t("knowledge.sourceMetadata.processed"),
+              value: formatDate(document.processedAt, intlLocale, t("common.notScored")),
+              helper: t("knowledge.sourceMetadata.latestIngestionStatus"),
             },
           ].map((item) => {
             const Icon = item.icon;
@@ -107,14 +114,14 @@ export function DocumentDetail({ document }: DocumentDetailProps) {
                 <FileSearch className="h-4 w-4" />
               </div>
               <div>
-                <CardTitle>Source metadata</CardTitle>
-                <CardDescription>Storage and ingestion details for this knowledge document.</CardDescription>
+                <CardTitle>{t("knowledge.metadataTitle")}</CardTitle>
+                <CardDescription>{t("knowledge.metadataDescription")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="rounded-2xl border border-[color:var(--border)] px-4 py-3">
-              <p className="text-sm text-[color:var(--muted)]">Storage path</p>
+              <p className="text-sm text-[color:var(--muted)]">{t("knowledge.sourceMetadata.storagePath")}</p>
               <p className="mt-2 break-all text-sm font-medium">{document.storagePath}</p>
             </div>
             {document.errorMessage ? (
@@ -123,9 +130,9 @@ export function DocumentDetail({ document }: DocumentDetailProps) {
               </Alert>
             ) : null}
             <div className="rounded-2xl border border-[color:var(--border)] px-4 py-3">
-              <p className="text-sm text-[color:var(--muted)]">Chunk coverage</p>
+              <p className="text-sm text-[color:var(--muted)]">{t("knowledge.sourceMetadata.chunkCoverage")}</p>
               <p className="mt-2 text-sm font-medium">
-                {document.metadata?.chunkCount ?? document.chunks.length} chunks available for retrieval preview.
+                {t("knowledge.sourceMetadata.chunkCoverageDescription", { count: document.metadata?.chunkCount ?? document.chunks.length })}
               </p>
             </div>
           </CardContent>
@@ -138,8 +145,8 @@ export function DocumentDetail({ document }: DocumentDetailProps) {
                 <Text className="h-4 w-4" />
               </div>
               <div>
-                <CardTitle>Chunk preview</CardTitle>
-                <CardDescription>Readable chunk samples so the retrieval layer is inspectable.</CardDescription>
+                <CardTitle>{t("knowledge.chunkPreviewTitle")}</CardTitle>
+                <CardDescription>{t("knowledge.chunkPreviewDescription")}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -147,18 +154,18 @@ export function DocumentDetail({ document }: DocumentDetailProps) {
             {document.chunks.length ? document.chunks.map((chunk) => (
               <div className="rounded-[28px] border border-[color:var(--border)] p-5" key={chunk.id}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <Badge variant="info">Chunk {chunk.chunkIndex}</Badge>
+                  <Badge variant="info">{t("knowledge.chunkLabel", { index: chunk.chunkIndex })}</Badge>
                   <p className="text-xs text-[color:var(--muted)]">
-                    {chunk.tokenCount !== null ? `${chunk.tokenCount} tokens` : "Token count unavailable"}
+                    {chunk.tokenCount !== null ? `${chunk.tokenCount} ${t("common.tokens")}` : t("knowledge.tokenCountUnavailable")}
                   </p>
                 </div>
                 <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[color:var(--foreground)]">{chunk.content}</p>
               </div>
             )) : (
               <EmptyState
-                description="Chunks have not been generated for this document yet."
+                description={t("knowledge.noChunkPreviewDescription")}
                 icon={Text}
-                title="No chunk preview available"
+                title={t("knowledge.noChunkPreview")}
               />
             )}
           </CardContent>

@@ -1,22 +1,28 @@
+"use client";
+
 import type { TicketMessage } from "@gft-assist/types";
 import { Bot, FileSearch, MessageSquare, ShieldEllipsis, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { getIntlLocale } from "@/lib/i18n/config";
+import { useLocale } from "@/providers/locale-provider";
 
 type TicketMessagesProps = {
   messages: TicketMessage[];
 };
 
 export function TicketMessages({ messages }: TicketMessagesProps) {
+  const { locale, t } = useLocale();
+
   if (!messages.length) {
     return (
       <Card className="rounded-[28px] p-6">
         <EmptyState
-          description="Customer replies, operator notes, and AI-generated messages will appear here."
+          description={t("tickets.timelineEmptyDescription")}
           icon={MessageSquare}
-          title="No timeline events yet"
+          title={t("tickets.timelineEmpty")}
         />
       </Card>
     );
@@ -32,7 +38,7 @@ export function TicketMessages({ messages }: TicketMessagesProps) {
   return (
     <Card className="rounded-[32px]">
       <CardHeader>
-        <CardTitle>Timeline</CardTitle>
+        <CardTitle>{t("tickets.timeline")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         {messages.map((message) => (
@@ -46,11 +52,11 @@ export function TicketMessages({ messages }: TicketMessagesProps) {
                   })()}
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{message.authorType}</p>
-                  <p className="text-xs text-[color:var(--muted)]">{new Date(message.createdAt).toLocaleString()}</p>
+                  <p className="text-sm font-medium">{t(`tickets.authorTypes.${message.authorType}`)}</p>
+                  <p className="text-xs text-[color:var(--muted)]">{new Date(message.createdAt).toLocaleString(getIntlLocale(locale))}</p>
                 </div>
               </div>
-              <Badge variant={authorMeta[message.authorType].tone}>{message.citations?.length ? "Grounded" : "Message"}</Badge>
+              <Badge variant={authorMeta[message.authorType].tone}>{message.citations?.length ? t("tickets.grounded") : t("tickets.message")}</Badge>
             </div>
 
             <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[color:var(--foreground)]">{message.content}</p>
@@ -59,7 +65,7 @@ export function TicketMessages({ messages }: TicketMessagesProps) {
               <div className="mt-4 space-y-2">
                 <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--muted)]">
                   <FileSearch className="h-3.5 w-3.5" />
-                  Citations
+                  {t("tickets.citations")}
                 </p>
                 {message.citations.map((citation) => (
                   <div className="rounded-2xl bg-slate-950/[0.03] p-4 text-sm dark:bg-white/[0.04]" key={`${message.id}-${citation.chunkId}`}>

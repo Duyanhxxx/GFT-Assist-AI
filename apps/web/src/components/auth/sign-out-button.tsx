@@ -4,10 +4,13 @@ import type { ComponentProps } from "react";
 
 import { createClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/providers/locale-provider";
 
 type SignOutButtonProps = Omit<ComponentProps<typeof Button>, "children" | "onClick">;
 
 export function SignOutButton(props: SignOutButtonProps) {
+  const { t } = useLocale();
+
   async function onSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -16,7 +19,7 @@ export function SignOutButton(props: SignOutButtonProps) {
 
   return (
     <Button onClick={onSignOut} {...props}>
-      Sign out
+      {t("common.signOut")}
     </Button>
   );
 }

@@ -9,10 +9,13 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { fetchTickets, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function TicketsPage() {
+  const { t } = await getServerTranslator();
+
   if (!hasSupabaseEnv()) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-12">
@@ -20,7 +23,7 @@ export default async function TicketsPage() {
           <EmptyState
             description="Add your Supabase environment variables before accessing the operator ticket queue."
             icon={ListFilter}
-            title="Configure Supabase to continue"
+            title={t("common.configureSupabase")}
           />
         </Card>
       </main>
@@ -43,33 +46,33 @@ export default async function TicketsPage() {
             <Link href="/submit-ticket">
               <Button variant="secondary">
                 <PlusCircle className="h-4 w-4" />
-                Public intake
+                {t("common.publicIntake")}
               </Button>
             </Link>
             <Link href="/dashboard">
               <Button>
-                Dashboard
+                {t("common.dashboard")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </>
         }
-        description="A clearer queue for triage, escalation, and AI-assisted resolution. Search and filtering are handled locally on the current dataset."
-        eyebrow="Tickets"
-        title="Ticket queue"
+        description={t("tickets.description")}
+        eyebrow={t("tickets.eyebrow")}
+        title={t("tickets.title")}
       />
 
       <Card className="surface-elevated rounded-[32px] p-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm font-semibold">Operator workflow</p>
+            <p className="text-sm font-semibold">{t("tickets.workflowTitle")}</p>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-[color:var(--muted)]">
-              Prioritize high-risk conversations, inspect AI confidence, and move directly into the full case view.
+              {t("tickets.workflowDescription")}
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--muted-foreground)]">
             <ListFilter className="h-4 w-4" />
-            Filter, sort, and page the queue below
+            {t("tickets.filterHint")}
           </div>
         </div>
       </Card>
@@ -82,7 +85,7 @@ export default async function TicketsPage() {
             <EmptyState
               description="The queue request did not return successfully. Try refreshing the page."
               icon={ListFilter}
-              title="Unable to load tickets"
+              title={t("system.unableTickets")}
             />
           </Card>
         )}

@@ -1,9 +1,12 @@
+"use client";
+
 import type { TicketDetail } from "@gft-assist/types";
 import { BadgeAlert, Globe2, HeartPulse, Lightbulb, Mail, UserRound } from "lucide-react";
 
 import { TicketConfidenceBadge, TicketPriorityBadge, TicketStatusBadge } from "@/components/tickets/ticket-badges";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocale } from "@/providers/locale-provider";
 
 type TicketDetailCardProps = {
   ticket: TicketDetail;
@@ -22,6 +25,8 @@ function titleCase(value: string | null) {
 }
 
 export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
+  const { t } = useLocale();
+
   return (
     <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
       <div className="space-y-6">
@@ -34,10 +39,10 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
               {ticket.intentLabel ? <Badge>{ticket.intentLabel}</Badge> : null}
             </div>
             <div className="space-y-3">
-              <p className="text-xs font-medium uppercase tracking-[0.24em] text-[color:var(--muted)]">Ticket brief</p>
+              <p className="text-xs font-medium uppercase tracking-[0.24em] text-[color:var(--muted)]">{t("tickets.brief")}</p>
               <CardTitle className="text-3xl leading-tight md:text-4xl">{ticket.subject}</CardTitle>
               <CardDescription className="text-sm leading-7">
-                Customer-facing issue details and AI-derived signals in one review surface.
+                {t("tickets.briefDescription")}
               </CardDescription>
             </div>
           </CardHeader>
@@ -46,27 +51,27 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
               {[
                 {
                   icon: UserRound,
-                  label: "Requester",
-                  value: ticket.requesterName ?? "Unknown requester",
+                  label: t("common.requester"),
+                  value: ticket.requesterName ?? t("common.unknownRequester"),
                   helper: ticket.requesterEmail,
                 },
                 {
                   icon: Mail,
-                  label: "Email",
+                  label: t("common.email"),
                   value: ticket.requesterEmail,
-                  helper: "Customer contact",
+                  helper: t("tickets.fields.customerContact"),
                 },
                 {
                   icon: Globe2,
-                  label: "Language",
-                  value: titleCase(ticket.languageCode) ?? "Not detected",
-                  helper: "Inbound ticket locale",
+                  label: t("common.languageLabel"),
+                  value: titleCase(ticket.languageCode) ?? t("tickets.values.notDetected"),
+                  helper: t("tickets.fields.inboundLocale"),
                 },
                 {
                   icon: HeartPulse,
-                  label: "Sentiment",
-                  value: titleCase(ticket.sentimentLabel) ?? "Not scored",
-                  helper: "AI signal",
+                  label: t("common.sentiment"),
+                  value: titleCase(ticket.sentimentLabel) ?? t("common.notScored"),
+                  helper: t("tickets.fields.aiSignal"),
                 },
               ].map((item) => {
                 const Icon = item.icon;
@@ -85,7 +90,7 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
             </div>
 
             <div className="rounded-[28px] border border-[color:var(--border)] bg-white/55 p-6 dark:bg-slate-950/35">
-              <p className="text-sm font-medium text-[color:var(--muted-foreground)]">Customer description</p>
+              <p className="text-sm font-medium text-[color:var(--muted-foreground)]">{t("tickets.customerDescription")}</p>
               <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[color:var(--foreground)]">{ticket.description}</p>
             </div>
           </CardContent>
@@ -99,8 +104,8 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
                   <Lightbulb className="h-4 w-4" />
                 </div>
                 <div>
-                  <CardTitle>AI summary</CardTitle>
-                  <CardDescription>Latest system-generated resolution summary for operator review.</CardDescription>
+                  <CardTitle>{t("tickets.aiSummary")}</CardTitle>
+                  <CardDescription>{t("tickets.aiSummaryDescription")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -118,20 +123,20 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
               <BadgeAlert className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle>Decision context</CardTitle>
-              <CardDescription>Signals that help operators judge whether to trust or escalate.</CardDescription>
+              <CardTitle>{t("tickets.decisionContext")}</CardTitle>
+              <CardDescription>{t("tickets.decisionContextDescription")}</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <dl className="space-y-3">
             {[
-              ["Status", ticket.status.replaceAll("_", " ")],
-              ["Priority", ticket.priority],
-              ["Intent", ticket.intentLabel ?? "Not classified"],
-              ["Sentiment", titleCase(ticket.sentimentLabel) ?? "Not scored"],
-              ["Language", titleCase(ticket.languageCode) ?? "Not detected"],
-              ["Confidence", ticket.confidenceScore !== null ? ticket.confidenceScore.toFixed(2) : "Not scored"],
+              [t("common.status"), t(`tickets.statuses.${ticket.status}`)],
+              [t("common.priority"), t(`tickets.priorities.${ticket.priority}`)],
+              [t("common.intent"), ticket.intentLabel ?? t("tickets.values.notClassified")],
+              [t("common.sentiment"), titleCase(ticket.sentimentLabel) ?? t("common.notScored")],
+              [t("common.languageLabel"), titleCase(ticket.languageCode) ?? t("tickets.values.notDetected")],
+              [t("common.confidence"), ticket.confidenceScore !== null ? ticket.confidenceScore.toFixed(2) : t("common.notScored")],
             ].map(([label, value]) => (
               <div className="flex items-start justify-between gap-4 rounded-2xl border border-[color:var(--border)] bg-white/50 px-4 py-3 dark:bg-slate-950/30" key={label}>
                 <dt className="text-sm text-[color:var(--muted)]">{label}</dt>

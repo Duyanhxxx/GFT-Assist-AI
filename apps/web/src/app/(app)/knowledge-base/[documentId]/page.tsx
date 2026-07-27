@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { fetchKnowledgeDocument, getServerAccessToken } from "@/lib/api/server";
 import { hasSupabaseEnv } from "@/lib/env";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,8 @@ type KnowledgeDocumentPageProps = {
 };
 
 export default async function KnowledgeDocumentPage({ params }: KnowledgeDocumentPageProps) {
+  const { t } = await getServerTranslator();
+
   if (!hasSupabaseEnv()) {
     return (
       <main className="mx-auto max-w-6xl px-6 py-12">
@@ -26,7 +29,7 @@ export default async function KnowledgeDocumentPage({ params }: KnowledgeDocumen
           <EmptyState
             description="Authentication must be configured before document inspection can load."
             icon={ArrowLeft}
-            title="Configure Supabase to continue"
+            title={t("common.configureSupabase")}
           />
         </Card>
       </main>
@@ -53,12 +56,12 @@ export default async function KnowledgeDocumentPage({ params }: KnowledgeDocumen
           <Link href="/knowledge-base">
             <Button variant="secondary">
               <ArrowLeft className="h-4 w-4" />
-              Back to library
+              {t("common.backToLibrary")}
             </Button>
           </Link>
         }
-        description="Inspect document readiness, source metadata, and chunk-level previews used by the retrieval layer."
-        eyebrow="Knowledge document"
+        description={t("knowledge.detailDescription")}
+        eyebrow={t("common.knowledgeDocument")}
         title={response.data.title}
       />
 
